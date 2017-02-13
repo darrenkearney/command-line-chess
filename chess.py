@@ -1,3 +1,4 @@
+from pieces import Bishop, King, Knight, Pawn, Queen, Rook 
 class Chess:
 
     # Initialize
@@ -67,31 +68,8 @@ class Chess:
         return output_string
 
 
-    # Sets up a two dimensional array for the game pieces
-    def setup_game_board( self ):
-        
- 
-        self.board = []
-        for y in range( self.settings[ 'max_y' ] ):
-            line_x = []
-            for x in range( self.settings[ 'max_x' ] ):
-                line_x.append( "" )
-            self.board.append( line_x )
 
-        # Just in case we add more game modes with odd setups
-        if self.settings['game_mode'] == 'normal':
-            board_setup_stack = ['r','n','b','k','q','b','n','r']
-            for tile in range( len( self.board[0] ) ):
-                self.board[0][tile] = board_setup_stack[tile]
-            for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = 'p'
-            for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = 'P'
-            for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = board_setup_stack[tile].upper()
-
-
-    def select_mode( self ):
+    def navigate_mode( self ):
 
         output_string = ""
 
@@ -137,6 +115,31 @@ class Chess:
         return output_string
 
 
+    # Sets up the two dimensional array for referencing the game pieces
+    def setup_game_board( self ):
+ 
+        self.board = []
+        for y in range( self.settings[ 'max_y' ] ):
+            line_x = []
+            for x in range( self.settings[ 'max_x' ] ):
+                line_x.append( "" ) # Empty board tiles are emty strings
+            self.board.append( line_x )
+
+        # Just in case we add more game modes with odd setups
+        if self.settings['game_mode'] == 'normal':
+
+            board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
+
+            for tile in range( len( self.board[0] ) ):
+                self.board[0][tile] = board_setup_stack[tile]
+            for tile in range( len( self.board[1] ) ):
+                self.board[1][tile] = 'p'
+            for tile in range( len( self.board[6] ) ):
+                self.board[6][tile] = 'P'
+            for tile in range( len( self.board[7] ) ):
+                self.board[7][tile] = board_setup_stack[tile].upper()
+
+
     # Run a "Frame" or execute a turn
     def update( self ):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -145,8 +148,13 @@ class Chess:
         
         user_direction = input("Move Cursor [w/s/a/d]: ")
         self.move_cursor( user_direction )
+        if user_direction.lower() == "x":
+            print("Using piece at {}".format(self.cursor_pos))
+            # pick up piece
+            self.select_piece()
 
-        print(self.select_mode())
+        print(self.navigate_mode())
+        self.update_count += 1
 
 
     def move_cursor( self, user_direction ):
@@ -168,5 +176,36 @@ class Chess:
                 self.cursor_pos[0] += 1
 
         print("Your move is {}. Cursor at {}".format(user_direction, self.cursor_pos))
-        self.update_count += 1
+        
+
+    def select_piece( self ):
+        x = self.cursor_pos[0]
+        y = self.cursor_pos[1]
+        
+        if self.board[y][x] == "":
+            return "Nothing to select"
+
+        # Bishop
+        if self.board[y][x].lower() == 'b':
+            print("Selected Bishop")
+
+        # King
+        if self.board[y][x].lower() == 'k':
+            print("Selected King")
+        
+        # Knight
+        if self.board[y][x].lower() == 'n':
+            print("Selected Knight")
+
+        # Pawn
+        if self.board[y][x].lower() == 'p':
+            print("Selected Pawn")
+
+        # Queen
+        if self.board[y][x].lower() == 'q':
+            print("Selected Queen")
+
+        # Rook
+        if self.board[y][x].lower() == 'r':
+            print("Selected Rook")
 
