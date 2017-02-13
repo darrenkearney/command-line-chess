@@ -4,8 +4,6 @@
 from chess import Chess
 
 
-
-
 def main():
 
     # The main game loop
@@ -15,7 +13,7 @@ def main():
     game = Chess()
     game.setup_game_board()
     game.turn_count = 0
-    print(game.get_board())
+    #print(game.get_board_string())
 
     try:
         while is_playing:

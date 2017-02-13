@@ -5,13 +5,15 @@ class Chess:
 
         # Default Settings
         self.settings = {
-            'players':    1,
-            'game_mode':  "normal",
-            'max_x': 8,
-            'max_y': 8
+            'players':      1,
+            'game_mode':    "normal",
+            'max_x':        8,
+            'max_y':        8
         }
 
-        self.turn_count = 0
+        self.update_count = 0
+
+        self.cursor_pos = [0,0] # (x,y)
 
         for item in kwargs.items():
             setattr( self, item )
@@ -30,7 +32,7 @@ class Chess:
                 break
 
 
-    def get_board( self ):
+    def get_board_string( self ):
 
         output_string = ""
 
@@ -89,16 +91,82 @@ class Chess:
                 self.board[7][tile] = board_setup_stack[tile].upper()
 
 
+    def select_mode( self ):
 
+        output_string = ""
 
+        alt = 0
 
+        for y in range( len(self.board) ):
+
+            # If the 
+            if y == self.cursor_pos[1] and self.cursor_pos[0] == 0:
+                line_x = "["
+            else:
+                line_x = "|"
+
+            for x in range( len(self.board[y]) ):
+                
+                # If there is nothing on the board tile use bg color
+                if self.board[y][x] == "":
+                    if alt % 2 == 0:
+                        line_x += "::"
+                    else:
+                        line_x += "  "
+                else:
+                    if alt % 2 == 0:
+                        line_x += "{}:".format( self.board[y][x] )
+                    else:
+                        line_x += "{} ".format( self.board[y][x] )
+                
+                # If it's the same tile as the cursor paint a square closing bracket
+                # otherwise paint a normal wall
+                if x == self.cursor_pos[0] and y == self.cursor_pos[1]:
+                    line_x += "]"
+                elif x == self.cursor_pos[0] - 1 and y == self.cursor_pos[1]:
+                    line_x += "["
+                else:
+                    line_x += "|"
+
+                alt += 1
+
+            output_string += "{}\n".format( line_x )
+
+            alt += 1
+
+        return output_string
 
 
     # Run a "Frame" or execute a turn
     def update( self ):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print("Update {}\n".format(self.turn_count))
-        print(self.get_board())
-        choice = input("Enter your move: ")
-        print("Your move is {}".format(choice))
-        self.turn_count += 1
+        print("Update {}\n".format(self.update_count))
+        #print(self.get_board_string())
+        
+        user_direction = input("Move Cursor [w/s/a/d]: ")
+        self.move_cursor( user_direction )
+
+        print(self.select_mode())
+
+
+    def move_cursor( self, user_direction ):
+        if user_direction.lower() == "s":
+            print("Down")
+            if self.cursor_pos[1] < len(self.board):
+                self.cursor_pos[1] += 1
+        if user_direction.lower() == "w":
+            print("Up")
+            if self.cursor_pos[1] > 0:
+                self.cursor_pos[1] -= 1
+        if user_direction.lower() == "a":
+            print("Left")
+            if self.cursor_pos[0] > 0:
+                self.cursor_pos[0] -= 1
+        if user_direction.lower() == "d":
+            print("Right")
+            if self.cursor_pos[0] < len(self.board[self.cursor_pos[1]]):
+                self.cursor_pos[0] += 1
+
+        print("Your move is {}. Cursor at {}".format(user_direction, self.cursor_pos))
+        self.update_count += 1
+
