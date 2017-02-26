@@ -15,9 +15,13 @@ class Chess:
         self.update_count = 0
 
         self.cursor_pos = [0,0] # (x,y)
+        self.selected_tile_pos = []
 
         for item in kwargs.items():
             setattr( self, item )
+
+
+        self.setup_game_board()
 
 
     def convert_coordinates( self, coords ):
@@ -68,22 +72,29 @@ class Chess:
         return output_string
 
 
+    def display( self ):
+        # This get's called every update.
+        # It returns the output that will be displayed to the user
+        # So it needs to handle all the conditions for displaying things.
+        # It may call helper functions to make the code cleaner and easier to understand.
 
-    def navigate_mode( self ):
 
+        # We're building a string to output to the console.
         output_string = ""
 
-        alt = 0
+        alt = 0 # Used to keep track of alternating tiles to paint the background
 
+        # Let's run a loop over all the tiles of all the rows on the board
+        # Filling in the characters as appropriate to their state
         for y in range( len(self.board) ):
 
-            # If the 
+            # check to see of the first tile on a row is selected, if so paint the border appropriately
             if y == self.cursor_pos[1] and self.cursor_pos[0] == 0:
                 line_x = "["
             else:
                 line_x = "|"
 
-            for x in range( len(self.board[y]) ):
+            for x in range( len( self.board[y] ) ):
                 
                 # If there is nothing on the board tile use bg color
                 if self.board[y][x] == "":
@@ -100,9 +111,15 @@ class Chess:
                 # If it's the same tile as the cursor paint a square closing bracket
                 # otherwise paint a normal wall
                 if x == self.cursor_pos[0] and y == self.cursor_pos[1]:
-                    line_x += "]"
-                elif x == self.cursor_pos[0] - 1 and y == self.cursor_pos[1]:
-                    line_x += "["
+                    if (x,y) == self.selected_tile_pos:
+                        line_x += ">"
+                    else:
+                        line_x += "]"
+                elif x + 1 == self.cursor_pos[0] and y == self.cursor_pos[1]:
+                    if (x + 1, y) == self.selected_tile_pos:
+                        line_x += "<"
+                    else:
+                        line_x += "["
                 else:
                     line_x += "|"
 
@@ -112,7 +129,7 @@ class Chess:
 
             alt += 1
 
-        return output_string
+        print(output_string)
 
 
     # Sets up the two dimensional array for referencing the game pieces
@@ -131,17 +148,42 @@ class Chess:
             board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
 
             for tile in range( len( self.board[0] ) ):
-                self.board[0][tile] = board_setup_stack[tile]
+                char = board_setup_stack[tile]
+                self.board[0][tile] = self.new_piece( board_setup_stack[tile], (tile, 0), "white" )
             for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = 'p'
+                self.board[1][tile] = Pawn( char = "p", pos = (tile, 1), side = "white" )
             for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = 'P'
+                self.board[6][tile] = Pawn( char = "P", pos = (tile, 6), side = "black" )
             for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = board_setup_stack[tile].upper()
+                self.board[7][tile] = self.new_piece( board_setup_stack[tile].upper(), (tile, 7), "black" )
+
+    def new_piece( self, char = "", pos = (0,0), side = "" ):
+        # Returns a new instance of a pieces class based on the char representation given
+
+        if char.lower() == 'b':
+            return Bishop( char = char, pos = pos, side = side )
+
+        if char.lower() == 'k':
+            return King( char = char, pos = pos, side = side )
+
+        if char.lower() == 'n': 
+            return Knight( char = char, pos = pos, side = side )
+     
+        if char.lower() == 'p': 
+            return Pawn( char = char, pos = pos, side = side )
+     
+        if char.lower() == 'q':
+            return Queen( char = char, pos = pos, side = side )
+
+        if char.lower() == 'r':
+            return Rook( char = char, pos = pos, side = side )
 
 
     # Run a "Frame" or execute a turn
     def update( self ):
+        # reset cursor
+        # print("^[[A"*40)
+
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("Update {}\n".format(self.update_count))
         #print(self.get_board_string())
@@ -152,8 +194,10 @@ class Chess:
             print("Using piece at {}".format(self.cursor_pos))
             # pick up piece
             self.select_piece()
+        
+        # Display chess board
+        self.display()
 
-        print(self.navigate_mode())
         self.update_count += 1
 
 
@@ -183,29 +227,31 @@ class Chess:
         y = self.cursor_pos[1]
         
         if self.board[y][x] == "":
-            return "Nothing to select"
+            print("Nothing to select")
+            return
 
         # Bishop
-        if self.board[y][x].lower() == 'b':
+        if self.board[y][x].char.lower() == 'b':
             print("Selected Bishop")
-
+            
         # King
-        if self.board[y][x].lower() == 'k':
+        if self.board[y][x].char.lower() == 'k':
             print("Selected King")
         
         # Knight
-        if self.board[y][x].lower() == 'n':
+        if self.board[y][x].char.lower() == 'n':
             print("Selected Knight")
 
         # Pawn
-        if self.board[y][x].lower() == 'p':
+        if self.board[y][x].char.lower() == 'p':
             print("Selected Pawn")
 
         # Queen
-        if self.board[y][x].lower() == 'q':
+        if self.board[y][x].char.lower() == 'q':
             print("Selected Queen")
 
         # Rook
-        if self.board[y][x].lower() == 'r':
+        if self.board[y][x].char.lower() == 'r':
             print("Selected Rook")
 
+        self.selected_tile_pos = (x,y)

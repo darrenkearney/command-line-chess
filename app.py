@@ -11,13 +11,16 @@ def main():
 
 
     game = Chess()
-    game.setup_game_board()
     game.turn_count = 0
-    #print(game.get_board_string())
+
+    print("Let's play chess.\n")
+
+    game.display()
 
     try:
         while is_playing:
             game.update()
+            
     except KeyboardInterrupt:
         print("\nThanks for playing chess. Goodbye!\n")
         exit()
