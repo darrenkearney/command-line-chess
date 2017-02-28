@@ -15,10 +15,11 @@ def main():
 
     print("Let's play chess.\n")
 
-    game.display()
+    #game.display()
 
     try:
         while is_playing:
+
             game.update()
             
     except KeyboardInterrupt:
