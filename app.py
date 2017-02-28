@@ -13,9 +13,15 @@ def main():
     game = Chess()
     game.turn_count = 0
 
-    print("Let's play chess.\n")
+    print("\nLet's play chess.\n")
 
-    #game.display()
+    # This command menu      
+    print(
+"""Commands:
+    Move Cursor = w (up) / s (down / a (left) / d (right)
+    Select Piece = x
+    Help (display this menu) = h / ? / help
+""")
 
     try:
         while is_playing:
