@@ -14,12 +14,15 @@ class Chess:
             'cursor_right_char': ']',
             'cursor_move_left_char': '<',
             'cursor_move_right_char': '>',
-            'tile_dark_bg_char':     ':'
+            'tile_dark_bg_char': ':'
         }
+        self.player_command = ""
+
+        self.is_help_mode = False
 
         self.is_piece_selected = False
 
-        self.current_player = 'black'
+        self.current_player = 'lowercase'
 
         self.update_count = 0
 
@@ -64,54 +67,76 @@ class Chess:
         for y in range( len(self.board) ):
             # Paint "Left" side of tile (we will hereafter append the tile edges to the tile content)
             # check to see of the first tile on a row is selected, if so paint the tile edge/border appropriately
+            
+            line_x = "\t" # Reset line_x for constructing new line
+
+            if self.is_help_mode == True:
+                line_x = "      {} ".format( 8 - y )
+
+
             if y == self.cursor_pos[1] and self.cursor_pos[0] == 0:
             
                 if self.selected_tile_pos == [0, y]:
-                    line_x = "\t{}".format( self.settings['cursor_move_left_char'] )
+                    line_x += "{}".format( self.settings['cursor_move_left_char'] )
             
                 else:
-                    line_x = "\t{}".format( self.settings['cursor_left_char'] )
+                    line_x += "{}".format( self.settings['cursor_left_char'] )
             else:
-                line_x = "\t|"
+                line_x += "|"
 
             if self.is_piece_selected == True:
             
                 if self.selected_tile_pos == [0, y]:
-                    line_x = "\t{}".format( self.settings['cursor_move_left_char'] )
+                    line_x += "{}".format( self.settings['cursor_move_left_char'] )
 
 
             for x in range( len( self.board[y] ) ):
                 # Paint "Contents" of tile
                 # If there is nothing on the board tile use bg color
 
+                # if the board tile is empty
                 if self.board[y][x] == "":
-                
-                    if alt % 2 == 0:
-                        if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
-                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], "+")
-                
+
+                    # check state - if there is a piece selected then we want to render it's available move tiles
+                    if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                        
+                        if alt % 2 == 0:
+                            line_x += "{}{}".format( "+", self.settings['tile_dark_bg_char'])
                         else:
                             line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['tile_dark_bg_char'] )
-                
                     else:
-                        if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
-                            print("[{},{}] in available tiles: {}".format(x,y, self.selected_piece.available_tiles))
-                            line_x += " {}".format( "+" )
-                        line_x += "  " # Empty blank tile
+
+                        if alt % 2 == 0:
+                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['tile_dark_bg_char'] )
+                        else:
+                            line_x += "  " # Empty blank tile
+                      
+                    # if alt % 2 == 0:
+                    #     if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                    #         line_x += "{}{}".format( self.settings['tile_dark_bg_char'], "+")
+                
+                    #     else:
+                    #         line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['tile_dark_bg_char'] )
+                
+                    # else:
+                    #     if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                    #         print("[{},{}] in available tiles: {}".format(x,y, self.selected_piece.available_tiles))
+                    #         line_x += " {}".format( "+" )
+                    #     line_x += "  " # Empty blank tile
 
                 else:
                     
                     if alt % 2 == 0:
                         if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
-                            line_x += "{}{}".format( self.board[y][x], "x" )
+                            line_x += "{}{}".format( "x", self.board[y][x] )
                         else:
-                            line_x += "{}{}".format( self.board[y][x], self.settings['tile_dark_bg_char'] )
+                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.board[y][x] )
                 
                     else:
                         if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
-                            line_x += "{}{}".format( self.board[y][x], "x" )
+                            line_x += "{}{}".format( "x", self.board[y][x], )
                         else:
-                            line_x += "{} ".format( self.board[y][x] )
+                            line_x += " {}".format( self.board[y][x] )
                 
                 # Paint "Right" side of tile
                 # If it's the same tile as the cursor paint a square closing bracket
@@ -165,7 +190,20 @@ class Chess:
 
                 alt += 1
 
-            output_string += "{}\n".format( line_x )
+            output_string += "{}".format( line_x )
+
+            if y <= 7:
+                output_string += "\n" # add a newline
+
+            # Help mode text
+            if y == 7 and self.is_help_mode == True:
+                line_x = "\t"
+                coords = ['a','b','c','d','e','f','g','h']
+
+                for x in range( len( self.board[y] ) ):
+                    line_x += " {} ".format( coords[x] )
+
+                output_string += "{}\n".format( line_x )
 
             alt += 1
 
@@ -229,16 +267,16 @@ class Chess:
 
             for tile in range( len( self.board[0] ) ):
                 char = board_setup_stack[tile]
-                self.board[0][tile] = self.new_piece( board_setup_stack[tile], (tile, 0), "white" )
+                self.board[0][tile] = self.new_piece( board_setup_stack[tile].upper(), (tile, 0), "uppercase" )
             
             for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = Pawn( char = "p", pos = (tile, 1), side = "white" )
+                self.board[1][tile] = Pawn( char = "P", pos = (tile, 1), side = "uppercase" )
             
             for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = Pawn( char = "P", pos = (tile, 6), side = "black" )
+                self.board[6][tile] = Pawn( char = "p", pos = (tile, 6), side = "lowercase" )
             
             for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = self.new_piece( board_setup_stack[tile].upper(), (tile, 7), "black" )
+                self.board[7][tile] = self.new_piece( board_setup_stack[tile], (tile, 7), "lowercase" )
 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):
@@ -263,7 +301,12 @@ class Chess:
             return Rook( char = char, pos = pos, side = side )
 
 
-    def move_cursor( self, player_command ):
+    def do_command( self, player_command ):
+
+        # Reset help mode
+        if self.is_help_mode == True:
+            self.is_help_mode = False
+
         if player_command.lower() == "s":
             print("Down")
             if self.cursor_pos[1] < len(self.board) - 1:
@@ -288,6 +331,16 @@ class Chess:
             print("None")
             player_command = "None"
 
+        if player_command.lower() in ["h", "help", "?"]:
+            self.is_help_mode = True
+            print("Help menu")
+            print(
+"""Commands:
+    Help (display this menu) = h / ? / help
+    Move Cursor = w (up) / s (down / a (left) / d (right)
+    Select Piece = x
+""")
+
         print("Your move is {}. Cursor at {}".format(player_command, self.cursor_pos))
         
 
@@ -299,6 +352,10 @@ class Chess:
         if self.board[y][x] == "":
             print("Nothing to select")
             self.is_piece_selected = False
+            return
+
+        if self.current_player != self.board[y][x].side:
+            print("Cannot select the other player's piece.")
             return
 
         self.is_piece_selected = True
@@ -330,27 +387,30 @@ class Chess:
 
     # Run a "Frame" or execute a turn
     def update( self ):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("~" * 42)
+        if self.is_help_mode == True:
+            print("\t\tUppercase")
+
         # Display chess board
         self.display()
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+        if self.is_help_mode == True:
+            print("\t\tLowercase")
+
+        print("~" * 42)
         print("Update {}".format(self.update_count))
 
         # Get input
         print("Current player: {}".format(self.current_player))
-        player_command = input("Enter a command: ")
-        self.move_cursor( player_command )
+        self.player_command = input("Enter a command: ")
+        self.do_command( self.player_command )
  
-        if player_command.lower() == "x":
+        if self.player_command.lower() == "x":
             print("Using piece at {}".format(self.cursor_pos))
+
             # pick up piece
             self.select_piece()
-        if player_command.lower() in ["h", "help", "?"]:
-            print(
-"""Commands:
-    Move Cursor = w (up) / s (down / a (left) / d (right)
-    Select Piece = x
-    Help (display this menu) = h / ? / help
-""")
+        
+        
 
         self.update_count += 1

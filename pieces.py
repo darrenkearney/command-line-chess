@@ -75,19 +75,20 @@ class Pawn(Piece):
         self.available_tiles = [] # array of (x,y) coordinate tuples
 
         # Check for opponent pieces that would need to be taken
-        for tile_x in [self.pos[0]-1, self.pos[0], self.pos[0]+1]:
+        #for tile_x in [self.pos[0]-1, self.pos[0], self.pos[0]+1]:
             # Only check within board
-            if tile_x >= 0 and tile_x <= 7:
+         #   if tile_x >= 0 and tile_x <= 7:
                 # Does the tile contain an opponent piece
-                if game.is_opponent_at_tile( [ tile_x, self.pos[1]+1 ] ) == True:
+          #      if game.is_opponent_at_tile( [ tile_x, self.pos[1]+1 ] ) == True:
                     # Add coordinates to available tiles
-                    self.available_tiles.append( [ tile_x, self.pos[1]+1 ] )
+           #         self.available_tiles.append( [ tile_x, self.pos[1]+1 ] )
 
         # A pawn has a simple moveset. It can only advance in the y access unless taking an
 
         for tile in range(1, total_available_moves):
+            print("PAWN MOVE TILE: {}".format(tile))
 
-            if game.current_player == "black":
+            if game.current_player == "lowercase":
                 tile = -tile
             
             # Cannot move out of bounds of the board
@@ -102,7 +103,6 @@ class Pawn(Piece):
 
         # Now that we have taken a move with the tile set this first move to false so we cannot do more
         self.is_first_move = False
-
 
 
 
