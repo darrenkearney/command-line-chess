@@ -12,9 +12,22 @@ class Chess:
             'max_y': 8,
             'cursor_left_char': '[',
             'cursor_right_char': ']',
-            'cursor_move_left_char': '<',
-            'cursor_move_right_char': '>',
-            'tile_dark_bg_char': ':'
+            'cursor_move_left_char': '{',
+            'cursor_move_right_char': '}',
+            'tile_dark_bg_char': ':',
+            'move_marker': '⦁',
+            'black_bishop_char':    '♝',
+            'black_king_char':      '♚',
+            'black_knight_char':    '♞',
+            'black_pawn_char':      '♟',
+            'black_queen_char':     '♛',
+            'black_rook_char':      '♜',
+            'white_bishop_char':    '♗',
+            'white_king_char':      '♔',
+            'white_knight_char':    '♘',
+            'white_pawn_char':      '♙',
+            'white_queen_char':     '♕',
+            'white_rook_char':      '♖'
         }
         self.player_command = ""
 
@@ -22,7 +35,7 @@ class Chess:
 
         self.is_piece_selected = False
 
-        self.current_player = 'lowercase'
+        self.current_player = 'uppercase'
 
         self.update_count = 0
 
@@ -56,6 +69,11 @@ class Chess:
         # So it needs to handle all the conditions for displaying things.
         # It may call helper functions to make the code cleaner and easier to understand.
 
+        print("~" * 42)
+        print("Update {}".format(self.update_count))
+
+        if self.is_help_mode == True:
+            print("\t\tUppercase")
 
         # We're building a string to output to the console.
         output_string = "\n"
@@ -74,20 +92,33 @@ class Chess:
                 line_x = "      {} ".format( 8 - y )
 
 
-            if y == self.cursor_pos[1] and self.cursor_pos[0] == 0:
-            
-                if self.selected_tile_pos == [0, y]:
-                    line_x += "{}".format( self.settings['cursor_move_left_char'] )
-            
-                else:
-                    line_x += "{}".format( self.settings['cursor_left_char'] )
-            else:
-                line_x += "|"
+            if y != self.cursor_pos[1]:
 
-            if self.is_piece_selected == True:
+                if self.is_piece_selected == True:
             
-                if self.selected_tile_pos == [0, y]:
-                    line_x += "{}".format( self.settings['cursor_move_left_char'] )
+                    if self.selected_tile_pos == [0, y]:
+                        line_x += "{}".format( self.settings['cursor_move_left_char'] )
+                    else:
+                        line_x += "|"
+                else:
+                    line_x += "|"
+
+            elif y == self.cursor_pos[1]:
+
+                if self.cursor_pos[0] == 0:
+
+                    if self.selected_tile_pos == [0, y]:
+                        line_x += "{}".format( self.settings['cursor_move_left_char'] )
+            
+                    else:
+                        line_x += "{}".format( self.settings['cursor_left_char'] )
+
+                elif self.cursor_pos[0] != 0:
+
+                    if [0, y] == self.selected_tile_pos:
+                        line_x += "{}".format( self.settings['cursor_move_left_char'] )
+                    else:
+                        line_x += "|"
 
 
             for x in range( len( self.board[y] ) ):
@@ -98,12 +129,12 @@ class Chess:
                 if self.board[y][x] == "":
 
                     # check state - if there is a piece selected then we want to render it's available move tiles
-                    if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                    if self.is_piece_selected == True and (x,y) in self.selected_piece.available_tiles:
                         
                         if alt % 2 == 0:
-                            line_x += "{}{}".format( "+", self.settings['tile_dark_bg_char'])
+                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['move_marker'] )
                         else:
-                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['tile_dark_bg_char'] )
+                            line_x += " {}".format( self.settings['move_marker'] )
                     else:
 
                         if alt % 2 == 0:
@@ -188,9 +219,11 @@ class Chess:
                     else:
                         line_x += "|"
 
-                alt += 1
+                alt += 1 # Bg tiles
 
             output_string += "{}".format( line_x )
+
+            alt += 1 # Bg tiles
 
             if y <= 7:
                 output_string += "\n" # add a newline
@@ -201,13 +234,34 @@ class Chess:
                 coords = ['a','b','c','d','e','f','g','h']
 
                 for x in range( len( self.board[y] ) ):
-                    line_x += " {} ".format( coords[x] )
+                    line_x += "  {}".format( coords[x] )
 
                 output_string += "{}\n".format( line_x )
 
-            alt += 1
 
+        
+
+        # Print board
         print(output_string)
+
+        if self.is_help_mode == True:
+            print("\t\tLowercase")
+
+
+        # Message Area
+        if self.is_piece_selected == True:
+            print("Selected: {}. Position: {}, Side: {}".format(
+                self.selected_piece.name,
+                self.selected_piece.pos,
+                self.selected_piece.side))
+
+            print("Available Tiles: {}".format(self.selected_piece.available_tiles))
+
+        
+
+        print("~" * 42)
+
+
 
 
     def get_board_string( self ):
@@ -256,7 +310,7 @@ class Chess:
             line_x = []
             
             for x in range( self.settings[ 'max_x' ] ):
-                line_x.append( "" ) # Empty board tiles are emty strings
+                line_x.append( "" ) # Empty board tiles are empty strings
             
             self.board.append( line_x )
 
@@ -307,6 +361,22 @@ class Chess:
         if self.is_help_mode == True:
             self.is_help_mode = False
 
+        if player_command == "":
+            print("None")
+            player_command = "None"
+
+        if player_command.lower() in ["h", "help", "?"]:
+            self.is_help_mode = True
+            print("Help menu")
+            print(
+"""Commands:
+    Help (display this menu) = h / ? / help
+    Move Cursor = w (up) / s (down / a (left) / d (right)
+    Select Piece = x
+""")
+
+        # Cursor Movement
+
         if player_command.lower() == "s":
             print("Down")
             if self.cursor_pos[1] < len(self.board) - 1:
@@ -327,19 +397,16 @@ class Chess:
             if self.cursor_pos[0] < len(self.board[self.cursor_pos[1]]) - 1:
                 self.cursor_pos[0] += 1
         
-        if player_command == "":
-            print("None")
-            player_command = "None"
+        
+        # Selecting a Piece on the board to move
 
-        if player_command.lower() in ["h", "help", "?"]:
-            self.is_help_mode = True
-            print("Help menu")
-            print(
-"""Commands:
-    Help (display this menu) = h / ? / help
-    Move Cursor = w (up) / s (down / a (left) / d (right)
-    Select Piece = x
-""")
+        if player_command.lower() == "x":
+
+            if self.is_piece_selected is False:
+                print("Using piece at {}".format(self.cursor_pos))
+
+            # pick up piece
+            self.select_piece()
 
         print("Your move is {}. Cursor at {}".format(player_command, self.cursor_pos))
         
@@ -352,15 +419,20 @@ class Chess:
         if self.board[y][x] == "":
             print("Nothing to select")
             self.is_piece_selected = False
-            return
+            return False
 
         if self.current_player != self.board[y][x].side:
-            print("Cannot select the other player's piece.")
-            return
+            if self.is_piece_selected == False:
+                print("Cannot select the other player's piece.")
+                return False
+            else:
+                print("Taking enemy pieces is not yet implemented! Sorry :O")
+                return False
 
         self.is_piece_selected = True
-        
-        self.board[y][x].select() # trigger the select method on the piece
+
+        # trigger the select method on the piece and pass in the game board
+        self.board[y][x].select( board = self.board, current_player = self.current_player ) 
     
         self.selected_piece = self.board[y][x]
         print("Selected: {}. Position: {}, Side: {}".format(
@@ -372,7 +444,7 @@ class Chess:
         self.selected_tile_pos = [x,y]
 
         # Set up possible moves (must send the chess board to this method)
-        self.selected_piece.get_possible_moves( self )
+        #self.selected_piece.get_possible_moves( board = self.board, current_player = self.current_player  )
 
     def is_opponent_at_tile( self, tile ):
         # Returns True if opponent player has a piece on the tile
@@ -387,30 +459,15 @@ class Chess:
 
     # Run a "Frame" or execute a turn
     def update( self ):
-        print("~" * 42)
-        if self.is_help_mode == True:
-            print("\t\tUppercase")
 
         # Display chess board
         self.display()
 
-        if self.is_help_mode == True:
-            print("\t\tLowercase")
-
-        print("~" * 42)
-        print("Update {}".format(self.update_count))
 
         # Get input
         print("Current player: {}".format(self.current_player))
         self.player_command = input("Enter a command: ")
         self.do_command( self.player_command )
- 
-        if self.player_command.lower() == "x":
-            print("Using piece at {}".format(self.cursor_pos))
-
-            # pick up piece
-            self.select_piece()
-        
         
 
         self.update_count += 1
