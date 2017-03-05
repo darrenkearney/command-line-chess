@@ -16,18 +16,18 @@ class Chess:
             'cursor_move_right_char': '}',
             'tile_dark_bg_char': ':',
             'move_marker': '⦁',
-            'black_bishop_char':    '♝',
-            'black_king_char':      '♚',
-            'black_knight_char':    '♞',
-            'black_pawn_char':      '♟',
-            'black_queen_char':     '♛',
-            'black_rook_char':      '♜',
-            'white_bishop_char':    '♗',
-            'white_king_char':      '♔',
-            'white_knight_char':    '♘',
-            'white_pawn_char':      '♙',
-            'white_queen_char':     '♕',
-            'white_rook_char':      '♖'
+            'black_bishop_char':    'b',    # '♝',
+            'black_king_char':      'k',    # '♚',
+            'black_knight_char':    'n',    # '♞',
+            'black_pawn_char':      'p',    # '♟',
+            'black_queen_char':     'q',    # '♛',
+            'black_rook_char':      'r',    # '♜',
+            'white_bishop_char':    'B',    # '♗',
+            'white_king_char':      'K',    # '♔',
+            'white_knight_char':    'N',    # '♘',
+            'white_pawn_char':      'P',    # '♙',
+            'white_queen_char':     'Q',    # '♕',
+            'white_rook_char':      'R'     # '♖'
         }
         self.player_command = ""
 
@@ -317,20 +317,42 @@ class Chess:
         # Just in case we add more game modes with odd setups
         if self.settings['game_mode'] == 'normal':
 
-            board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
+            # board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
+            board_setup_stack = [
+                [
+                    self.settings['black_rook_char'],
+                    self.settings['black_knight_char'],
+                    self.settings['black_bishop_char'],
+                    self.settings['black_king_char'],
+                    self.settings['black_queen_char'],
+                    self.settings['black_bishop_char'],
+                    self.settings['black_knight_char'],
+                    self.settings['black_rook_char']
+                ],[
+                    self.settings['white_rook_char'],
+                    self.settings['white_knight_char'],
+                    self.settings['white_bishop_char'],
+                    self.settings['white_king_char'],
+                    self.settings['white_queen_char'],
+                    self.settings['white_bishop_char'],
+                    self.settings['white_knight_char'],
+                    self.settings['white_rook_char']
+                ]]
+
+
 
             for tile in range( len( self.board[0] ) ):
-                char = board_setup_stack[tile]
-                self.board[0][tile] = self.new_piece( board_setup_stack[tile].upper(), (tile, 0), "uppercase" )
+                #char = board_setup_stack[tile]
+                self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
             
             for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = Pawn( char = "P", pos = (tile, 1), side = "uppercase" )
+                self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
             
             for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = Pawn( char = "p", pos = (tile, 6), side = "lowercase" )
+                self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
             
             for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = self.new_piece( board_setup_stack[tile], (tile, 7), "lowercase" )
+                self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):
