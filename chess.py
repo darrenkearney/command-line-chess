@@ -262,121 +262,6 @@ class Chess:
         print("~" * 42)
 
 
-
-
-    def get_board_string( self ):
-
-        output_string = ""
-
-        # Keeps track of alternating board tiles for rendering bg
-        alt = 0
-
-        for y in range( len(self.board) ):
-
-            line_x = "|"
-
-            for x in range( len(self.board[y]) ):
-                
-                # If there is nothing on the board tile use bg color
-                if self.board[y][x] == "":
-                
-                    if alt % 2 == 0:
-                        line_x += "::|"
-                
-                    else:
-                        line_x += "  |"
-                else:
-                    if alt % 2 == 0:
-                        line_x += "{}:|".format( self.board[y][x] )
-                
-                    else:
-                        line_x += "{} |".format( self.board[y][x] )
-                    
-                alt += 1
-
-            output_string += "{}\n".format( line_x )
-
-            alt += 1
-            
-        # Return the output string
-        return output_string
-
-
-    # Sets up the two dimensional array for referencing the game pieces
-    def setup_game_board( self ):
- 
-        self.board = []
-        for y in range( self.settings[ 'max_y' ] ):
-            line_x = []
-            
-            for x in range( self.settings[ 'max_x' ] ):
-                line_x.append( "" ) # Empty board tiles are empty strings
-            
-            self.board.append( line_x )
-
-        # Just in case we add more game modes with odd setups
-        if self.settings['game_mode'] == 'normal':
-
-            # board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
-            board_setup_stack = [
-                [
-                    self.settings['black_rook_char'],
-                    self.settings['black_knight_char'],
-                    self.settings['black_bishop_char'],
-                    self.settings['black_king_char'],
-                    self.settings['black_queen_char'],
-                    self.settings['black_bishop_char'],
-                    self.settings['black_knight_char'],
-                    self.settings['black_rook_char']
-                ],[
-                    self.settings['white_rook_char'],
-                    self.settings['white_knight_char'],
-                    self.settings['white_bishop_char'],
-                    self.settings['white_king_char'],
-                    self.settings['white_queen_char'],
-                    self.settings['white_bishop_char'],
-                    self.settings['white_knight_char'],
-                    self.settings['white_rook_char']
-                ]]
-
-
-
-            for tile in range( len( self.board[0] ) ):
-                #char = board_setup_stack[tile]
-                self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
-            
-            for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
-            
-            for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
-            
-            for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
-
-
-    def new_piece( self, char = "", pos = (0,0), side = "" ):
-        # Returns a new instance of a pieces class based on the char representation given
-
-        if char.lower() == 'b':
-            return Bishop( char = char, pos = pos, side = side )
-
-        if char.lower() == 'k':
-            return King( char = char, pos = pos, side = side )
-
-        if char.lower() == 'n': 
-            return Knight( char = char, pos = pos, side = side )
-     
-        if char.lower() == 'p': 
-            return Pawn( char = char, pos = pos, side = side )
-     
-        if char.lower() == 'q':
-            return Queen( char = char, pos = pos, side = side )
-
-        if char.lower() == 'r':
-            return Rook( char = char, pos = pos, side = side )
-
-
     def do_command( self, player_command ):
 
         # Reset help mode
@@ -420,18 +305,182 @@ class Chess:
                 self.cursor_pos[0] += 1
         
         
-        # Selecting a Piece on the board to move
+        # Selecting a Piece on, entering move mode, then selecting it's desination or not
 
         if player_command.lower() == "x":
 
-            if self.is_piece_selected is False:
+
+            if self.is_piece_selected == True:
+                if (self.cursor_pos[0],self.cursor_pos[1]) in self.selected_piece.available_tiles:
+                    print("Fantastic! Let's move something.")
+                    
+                    self.move_piece( self.selected_piece.pos, self.cursor_pos )
+                    
+                    self.is_piece_selected = False # Deselect piece
+
+                    self.end_turn()
+
+                else:
+                    print("Cannot move to that tile.")
+
+                    self.is_piece_selected = False # Deselect piece
+
+            elif self.is_piece_selected == False:
                 print("Using piece at {}".format(self.cursor_pos))
+                # pick up piece
+                self.select_piece()
 
-            # pick up piece
-            self.select_piece()
+            
 
-        print("Your move is {}. Cursor at {}".format(player_command, self.cursor_pos))
+        print("Your command was '{}'. Cursor at {}".format(player_command, self.cursor_pos))
+    
+
+    def end_turn( self ):
+        print("Ending turn for {}.".format( self.current_player ))
+        if self.current_player == "uppercase":
+            self.current_player = "lowercase"
+            self.cursor_pos = [7,7]
+        elif self.current_player == "lowercase":
+            self.current_player = "uppercase"
+            self.cursor_pos = [0,0]
+
+
+    def get_board_string( self ):
+
+        output_string = ""
+
+        # Keeps track of alternating board tiles for rendering bg
+        alt = 0
+
+        for y in range( len(self.board) ):
+
+            line_x = "|"
+
+            for x in range( len(self.board[y]) ):
+                
+                # If there is nothing on the board tile use bg color
+                if self.board[y][x] == "":
+                
+                    if alt % 2 == 0:
+                        line_x += "::|"
+                
+                    else:
+                        line_x += "  |"
+                else:
+                    if alt % 2 == 0:
+                        line_x += "{}:|".format( self.board[y][x] )
+                
+                    else:
+                        line_x += "{} |".format( self.board[y][x] )
+                    
+                alt += 1
+
+            output_string += "{}\n".format( line_x )
+
+            alt += 1
+            
+        # Return the output string
+        return output_string
+
+
+    def is_opponent_at_tile( self, tile ):
+        # Returns True if opponent player has a piece on the tile
+        if type(self.board[ tile[0] ][ tile[1] ]) == str:
+            return False
+
+        if self.current_player == self.board[ tile[0] ][ tile[1] ].side:
+            return True
         
+        return False
+
+
+    def move_piece( self, src, dest ):
+
+        if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player.side:
+            
+            self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
+            
+            self.board[dest[1]][dest[0]].pos = (dest[0], dest[1]) # Give it the new position tuple coordinate
+
+            self.board[dest[1]][dest[0]].moved()
+
+            self.board[src[1]][src[0]] = "" # now that the piece has moved the board src tile is set to blank
+
+
+    def new_piece( self, char = "", pos = (0,0), side = "" ):
+        # Returns a new instance of a pieces class based on the char representation given
+
+        if char.lower() == 'b':
+            return Bishop( char = char, pos = pos, side = side )
+
+        if char.lower() == 'k':
+            return King( char = char, pos = pos, side = side )
+
+        if char.lower() == 'n': 
+            return Knight( char = char, pos = pos, side = side )
+     
+        if char.lower() == 'p': 
+            return Pawn( char = char, pos = pos, side = side )
+     
+        if char.lower() == 'q':
+            return Queen( char = char, pos = pos, side = side )
+
+        if char.lower() == 'r':
+            return Rook( char = char, pos = pos, side = side )
+
+
+    # Sets up the two dimensional array for referencing the game pieces
+    def setup_game_board( self ):
+ 
+        self.board = []
+        for y in range( self.settings[ 'max_y' ] ):
+            line_x = []
+            
+            for x in range( self.settings[ 'max_x' ] ):
+                line_x.append( "" ) # Empty board tiles are empty strings
+            
+            self.board.append( line_x )
+
+        # Just in case we add more game modes with odd setups
+        if self.settings['game_mode'] == 'normal':
+
+            # board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
+            board_setup_stack = [
+                [
+                    self.settings['black_rook_char'],
+                    self.settings['black_knight_char'],
+                    self.settings['black_bishop_char'],
+                    self.settings['black_king_char'],
+                    self.settings['black_queen_char'],
+                    self.settings['black_bishop_char'],
+                    self.settings['black_knight_char'],
+                    self.settings['black_rook_char']
+                ],[
+                    self.settings['white_rook_char'],
+                    self.settings['white_knight_char'],
+                    self.settings['white_bishop_char'],
+                    self.settings['white_king_char'],
+                    self.settings['white_queen_char'],
+                    self.settings['white_bishop_char'],
+                    self.settings['white_knight_char'],
+                    self.settings['white_rook_char']
+                ]]
+
+
+            for tile in range( len( self.board[0] ) ):
+                #char = board_setup_stack[tile]
+                self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
+            
+            for tile in range( len( self.board[1] ) ):
+                self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
+            
+            for tile in range( len( self.board[6] ) ):
+                self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
+            
+            for tile in range( len( self.board[7] ) ):
+                self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
+
+
 
     def select_piece( self ):
         x = self.cursor_pos[0]
@@ -467,16 +516,6 @@ class Chess:
 
         # Set up possible moves (must send the chess board to this method)
         #self.selected_piece.get_possible_moves( board = self.board, current_player = self.current_player  )
-
-    def is_opponent_at_tile( self, tile ):
-        # Returns True if opponent player has a piece on the tile
-        if type(self.board[ tile[0] ][ tile[1] ]) == str:
-            return False
-
-        if self.current_player == self.board[ tile[0] ][ tile[1] ].side:
-            return True
-        
-        return False
 
 
     # Run a "Frame" or execute a turn

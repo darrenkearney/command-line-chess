@@ -13,7 +13,7 @@ class Piece(object):
     def __str__( self ):
         return "{}".format(self.char)
 
-    def select( self,  board = [[]], player = "" ):
+    def select( self, board = [[]], current_player = ""):
         pass
 
     def get_possible_moves( self, board = [[]], current_player = "" ):
@@ -40,6 +40,9 @@ class Piece(object):
             return True
 
         return False
+
+    def moved( self ):
+        pass
     
 
 class Bishop(Piece):
@@ -140,6 +143,11 @@ class Pawn(Piece):
             total_available_moves -= 1
 
         return self.available_tiles
+
+    def moved( self ):
+        # Triggered when this pawn is moved
+        if self.is_first_move == True:
+            self.is_first_move = False
 
     def select( self, board, current_player ):
 
