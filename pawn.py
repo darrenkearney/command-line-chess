@@ -1,80 +1,4 @@
-class Piece(object):
-
-    available_tiles = [] # array to store coords of available movement tiles
-
-    def __init__( self, **kwargs ):
-        
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )
-
-    def __str__( self ):
-        return "{}".format(self.char)
-
-    def select( self, board = [[]], current_player = ""):
-        pass
-
-    def get_possible_moves( self, board = [[]], current_player = "" ):
-        return []
-
-    def is_opponent_at_tile( self, board_tile ):
-        # Returns True if opponent player has a piece on the tile
-        
-        if type(board_tile) == str:
-            return False
-
-        if self.side == board_tile.side:
-            return False
-        
-        return True
-
-    def is_piece_at_tile( self, board_tile ):
-        # Returns True if opponent player has a piece on the tile
-        
-        if type(board_tile) == str:
-            return False
-
-        if board_tile.side in ["uppercase", "lowercase"]:
-            return True
-
-        return False
-
-    def moved( self ):
-        pass
-    
-
-class Bishop(Piece):
-
-    def __init__( self, **kwargs ):
-        
-        self.name = "Bishop"
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )
-
-class King(Piece):
-
-    def __init__( self, **kwargs ):
-        
-        self.name = "King"
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )
-
-
-class Knight(Piece):
-
-    def __init__( self, **kwargs ):
-        
-        self.name = "Knight"
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )
+from piece import Piece
 
 
 class Pawn(Piece):
@@ -98,12 +22,10 @@ class Pawn(Piece):
 
         self.available_tiles = [] # array of (x,y) coordinate tuples
 
-
         total_available_moves = 1
     
         if self.is_first_move:
             total_available_moves = 2
-
 
         #
         # Check for opponent pieces that would need to be taken
@@ -122,7 +44,6 @@ class Pawn(Piece):
         #
         # Pawn advancement in-lane
         #
-
         if current_player == "uppercase":
             y_direction = 1
 
@@ -158,25 +79,3 @@ class Pawn(Piece):
         # Now that we have taken a move with the tile set this first move to false so we cannot do more
         #self.is_first_move = False
 
-
-
-class Queen(Piece):
-
-    def __init__( self, **kwargs ):
-        
-        self.name = "Queen"
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )
-
-
-class Rook(Piece):
-
-    def __init__( self, **kwargs ):
-        
-        self.name = "Rook"
-        self.char = kwargs['char'] # this is used as the representation of the piece
-
-        for key, value in kwargs.items():
-            setattr( self, key, value )

@@ -1,5 +1,14 @@
-from pieces import Bishop, King, Knight, Pawn, Queen, Rook 
+from piece  import Piece
+from bishop import Bishop
+from king   import King
+from knight import Knight
+from pawn   import Pawn
+from queen  import Queen
+from rook   import Rook
+
 class Chess:
+
+    command_list = []
 
     # Initialize
     def __init__( self, **kwargs ):
@@ -49,6 +58,14 @@ class Chess:
 
         self.setup_game_board()
 
+
+    def add_command( self, command ):
+
+        # if type(command) == list:
+        #     for c in command:
+        #         self.command_list.append(command)
+
+        self.command_list.append(command)
 
     def convert_coordinates( self, coords ):
         # If player enters the chess board coordinate used in the board game
@@ -256,11 +273,11 @@ class Chess:
                 self.selected_piece.side))
 
             print("Available Tiles: {}".format(self.selected_piece.available_tiles))
-
         
+        print("Current player: {}".format(self.current_player))
 
         print("~" * 42)
-
+        
 
     def do_command( self, player_command ):
 
@@ -281,6 +298,12 @@ class Chess:
     Move Cursor = w (up) / s (down / a (left) / d (right)
     Select Piece = x
 """)
+        if player_command.lower() == "debug":
+            print(
+"""Command List: {}
+""".format(
+                self.command_list
+            ))
 
         # Cursor Movement
 
@@ -414,7 +437,7 @@ class Chess:
 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):
-        # Returns a new instance of a pieces class based on the char representation given
+        # Returns a new instance of a pieces class based on the string given to this method
 
         if char.lower() == 'b':
             return Bishop( char = char, pos = pos, side = side )
@@ -530,11 +553,14 @@ class Chess:
         # Display chess board
         self.display()
 
-
         # Get input
-        print("Current player: {}".format(self.current_player))
         self.player_command = input("Enter a command: ")
-        self.do_command( self.player_command )
+        self.add_command( self.player_command )
+
+        # Do command
+        # If the command list is not empty, pop a command and do it.
+        if self.command_list != []:
+            self.do_command(self.command_list.pop())
         
 
         self.update_count += 1
