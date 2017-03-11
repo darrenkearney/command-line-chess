@@ -337,9 +337,11 @@ class Chess:
 
     def end_turn( self ):
         print("Ending turn for {}.".format( self.current_player ))
+
+        # Set cursor to players side
         if self.current_player == "uppercase":
             self.current_player = "lowercase"
-            self.cursor_pos = [7,7]
+            self.cursor_pos = [0,7]
         elif self.current_player == "lowercase":
             self.current_player = "uppercase"
             self.cursor_pos = [0,0]
@@ -395,6 +397,10 @@ class Chess:
 
 
     def move_piece( self, src, dest ):
+
+        # Generic move method - this is part of the chess class and not the piece class.
+        # This will likely need to be looked at again in future to decide how to implement special moves
+        # If the destination is not empty or containing a piece from the same player then move there.
 
         if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player.side:
             
