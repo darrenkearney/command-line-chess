@@ -425,7 +425,7 @@ class Chess:
         # This will likely need to be looked at again in future to decide how to implement special moves
         # If the destination is not empty or containing a piece from the same player then move there.
 
-        if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player.side:
+        if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player:
             
             self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
             
