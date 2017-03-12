@@ -28,6 +28,15 @@ class Pawn(Piece):
             total_available_moves = 2
 
         #
+        # Pawn advancement direction
+        #
+        if current_player == "uppercase":
+            y_direction = 1
+
+        if current_player == "lowercase":
+            y_direction = -1
+
+        #
         # Check for opponent pieces that would need to be taken
         #
         for tile_x in [self.pos[0]-1, self.pos[0], self.pos[0]+1]:
@@ -37,18 +46,11 @@ class Pawn(Piece):
                 #print("Tile_x: {}".format(type(tile_x)))
                 #print("self.pos[1]+1: {} + 1".format(type(self.pos[1])))
 
-                if self.is_opponent_at_tile( board[ self.pos[1]+1 ][ tile_x ] ) == True:
+                if self.is_opponent_at_tile( board[ self.pos[1]+y_direction ][ tile_x ] ) == True:
                     # Add coordinates to available tiles
-                    self.available_tiles.append( (self.pos[1]+1, tile_x ) )
+                    self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
 
-        #
-        # Pawn advancement in-lane
-        #
-        if current_player == "uppercase":
-            y_direction = 1
-
-        if current_player == "lowercase":
-            y_direction = -1
+        
 
         while total_available_moves > 0:
             print("PAWN MOVE TILE: {}".format(y_direction))

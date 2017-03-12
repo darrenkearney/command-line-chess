@@ -6,7 +6,6 @@ class Piece(object):
         
         self.char = kwargs['char'] # this is used as the representation of the piece
 
-
         for key, value in kwargs.items():
             setattr( self, key, value )
 
@@ -20,8 +19,11 @@ class Piece(object):
         return []
 
     def is_opponent_at_tile( self, board_tile ):
+        # board_tile given is the contents of the board tile, either a string or an object instance of a piece
         # Returns True if opponent player has a piece on the tile
         
+        print("DEBUG: IS_OPPONENT_AT_TILE:{}".format(board_tile))
+
         if type(board_tile) == str:
             return False
 
