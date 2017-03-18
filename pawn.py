@@ -6,6 +6,7 @@ class Pawn(Piece):
     def __init__( self, **kwargs ):
 
         self.name = "Pawn"
+        self.available_tiles = [] # array to store coords of available movement tiles
         self.is_first_move = True
 
         #self.pos = kwargs['pos'] # (x,y)
@@ -39,17 +40,13 @@ class Pawn(Piece):
         #
         # Check for opponent pieces that would need to be taken
         #
-        for tile_x in [self.pos[0]-1, self.pos[0], self.pos[0]+1]:
+        for tile_x in [self.pos[0]-1, self.pos[0]+1]:
             # Only check within board
             if tile_x >= 0 and tile_x <= 7:
-                # Does the tile contain an opponent piece
-                #print("Tile_x: {}".format(type(tile_x)))
-                #print("self.pos[1]+1: {} + 1".format(type(self.pos[1])))
-
+                # Does the tile contain an opponent piece?
                 if self.is_opponent_at_tile( board[ self.pos[1]+y_direction ][ tile_x ] ) == True:
                     # Add coordinates to available tiles
                     self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
-
         
 
         while total_available_moves > 0:
@@ -65,7 +62,7 @@ class Pawn(Piece):
 
             total_available_moves -= 1
 
-        return self.available_tiles
+        return self.filter_available_tiles(self.available_tiles)
 
     def moved( self ):
         # Triggered when this pawn is moved
