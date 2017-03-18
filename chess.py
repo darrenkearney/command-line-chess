@@ -124,7 +124,7 @@ class Chess:
 
                 if self.cursor_pos[0] == 0:
 
-                    if self.selected_tile_pos == [0, y]:
+                    if self.selected_tile_pos == [0, y] and self.is_piece_selected == True:
                         line_x += "{}".format( self.settings['cursor_move_left_char'] )
             
                     else:
@@ -132,7 +132,7 @@ class Chess:
 
                 elif self.cursor_pos[0] != 0:
 
-                    if [0, y] == self.selected_tile_pos:
+                    if [0, y] == self.selected_tile_pos and self.is_piece_selected == True:
                         line_x += "{}".format( self.settings['cursor_move_left_char'] )
                     else:
                         line_x += "|"
