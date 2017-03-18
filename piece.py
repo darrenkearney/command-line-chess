@@ -1,10 +1,9 @@
 class Piece(object):
 
-    available_tiles = [] # array to store coords of available movement tiles
-
     def __init__( self, **kwargs ):
         
         self.char = kwargs['char'] # this is used as the representation of the piece
+        self.available_tiles = [] # array to store coords of available movement tiles
 
         for key, value in kwargs.items():
             setattr( self, key, value )
@@ -15,8 +14,19 @@ class Piece(object):
     def select( self, board = [[]], current_player = ""):
         pass
 
+    def filter_available_tiles( self, available_tiles = [] ):
+        # This filter takes in an array of (x,y) tile coordinates.
+        # This function serves as a way of overriding the available tile output for
+        # specific use cases in which the available tiles must be altered. 
+        
+        if self.available_tiles != []:
+            if available_tiles == []:
+                available_tiles = self.available.tiles
+
+        return available_tiles
+
     def get_possible_moves( self, board = [[]], current_player = "" ):
-        return []
+        return self.filter_available_tiles([])
 
     def is_opponent_at_tile( self, board_tile ):
         # board_tile given is the contents of the board tile, either a string or an object instance of a piece
