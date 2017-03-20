@@ -46,6 +46,21 @@ class Chess:
 
         self.current_player = 'uppercase'
 
+        self.player_info = {
+            self.current_player : {
+                'is_in_check': False,
+                'last_cursor_pos': [0,0],
+                'name': "Player 1",
+                'pieces_taken': []
+            },
+            self.get_opposite_player() : {
+                'is_in_check': False,
+                'last_cursor_pos': [7,7],
+                'name': "Player 2",
+                'pieces_taken': []
+            }
+        }
+
         self.update_count = 0
 
         self.cursor_pos = [0,0] # (x,y)
@@ -54,7 +69,6 @@ class Chess:
 
         for item in kwargs.items():
             setattr( self, item )
-
 
         self.setup_game_board()
 
@@ -66,6 +80,7 @@ class Chess:
         #         self.command_list.append(command)
 
         self.command_list.append(command)
+
 
     def convert_coordinates( self, coords ):
         # If player enters the chess board coordinate used in the board game
@@ -253,17 +268,13 @@ class Chess:
                 for x in range( len( self.board[y] ) ):
                     line_x += "  {}".format( coords[x] )
 
-                output_string += "{}\n".format( line_x )
-
-
-        
+                output_string += "{}\n".format( line_x )        
 
         # Print board
         print(output_string)
 
         if self.is_help_mode == True:
             print("\t\tLowercase")
-
 
         # Message Area
         if self.is_piece_selected == True:
@@ -361,13 +372,14 @@ class Chess:
     def end_turn( self ):
         print("Ending turn for {}.".format( self.current_player ))
 
+        # Save cursor pos
+        self.player_info[self.current_player]['last_cursor_pos'] = self.cursor_pos
+
+        # Get next player
+        self.current_player = self.get_opposite_player()
+
         # Set cursor to players side
-        if self.current_player == "uppercase":
-            self.current_player = "lowercase"
-            self.cursor_pos = [0,7]
-        elif self.current_player == "lowercase":
-            self.current_player = "uppercase"
-            self.cursor_pos = [0,0]
+        self.cursor_pos = self.player_info[self.current_player]['last_cursor_pos']
 
 
     def get_board_string( self ):
@@ -408,12 +420,31 @@ class Chess:
         return output_string
 
 
+    def get_opposite_player(self):
+        # Returns a string of the opposite player, or None if none yet defined
+
+        if self.current_player == "uppercase":
+            return "lowercase"
+
+        if self.current_player == "lowercase":
+            return "uppercase"
+
+        if self.current_player == "black":
+            return "white"
+
+        if self.current_player == "white":
+            return "black"
+    
+        return None
+
+
     def is_opponent_at_tile( self, tile ):
         # Returns True if opponent player has a piece on the tile
-        if type(self.board[ tile[0] ][ tile[1] ]) == str:
+
+        if type(self.board[ tile[1] ][ tile[0] ]) == str:
             return False
 
-        if self.current_player == self.board[ tile[0] ][ tile[1] ].side:
+        if self.get_opposite_player() == self.board[ tile[1] ][ tile[0] ].side:
             return True
         
         return False
@@ -426,7 +457,15 @@ class Chess:
         # If the destination is not empty or containing a piece from the same player then move there.
 
         if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player:
-            
+
+            if self.is_opponent_at_tile( dest ) == True:
+                print("{} {} takes {} {}.".format(
+                    self.player_info[ self.current_player ]['name'],
+                    self.board[src[1]][src[0]].name,
+                    self.player_info[ self.get_opposite_player() ]['name'],
+                    self.board[dest[1]][dest[0]].name
+                ))
+
             self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
             
             self.board[dest[1]][dest[0]].pos = (dest[0], dest[1]) # Give it the new position tuple coordinate
@@ -458,8 +497,8 @@ class Chess:
             return Rook( char = char, pos = pos, side = side )
 
 
-    # Sets up the two dimensional array for referencing the game pieces
     def setup_game_board( self ):
+        # Sets up the two dimensional array for referencing the game pieces
  
         self.board = []
         for y in range( self.settings[ 'max_y' ] ):
@@ -510,7 +549,6 @@ class Chess:
                 self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
 
 
-
     def select_piece( self ):
         x = self.cursor_pos[0]
         y = self.cursor_pos[1]
@@ -540,15 +578,14 @@ class Chess:
             self.selected_piece.pos,
             self.selected_piece.side))
 
-
         self.selected_tile_pos = [x,y]
 
         # Set up possible moves (must send the chess board to this method)
         #self.selected_piece.get_possible_moves( board = self.board, current_player = self.current_player  )
 
 
-    # Run a "Frame" or execute a turn
     def update( self ):
+        # Run a "Frame" (typically on executing a command)
 
         # Display chess board
         self.display()
@@ -561,6 +598,6 @@ class Chess:
         # If the command list is not empty, pop a command and do it.
         if self.command_list != []:
             self.do_command(self.command_list.pop())
-        
 
+        # Increment update count (our version of a time delta)
         self.update_count += 1
