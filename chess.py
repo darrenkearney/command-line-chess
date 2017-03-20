@@ -449,6 +449,20 @@ class Chess:
         
         return False
 
+    def is_opponent_in_check( self ):
+        # Needs a bit of work
+
+        self.is_opp_in_check_tiles = self.selected_piece.get_possible_moves(
+            board = self.board,
+            current_player = self.current_player
+        )
+
+        for tile in self.is_opp_in_check_tiles:
+            if hasattr(self.board[ tile[1] ][ tile[0] ], 'name'):
+                if self.board[ tile[1] ][ tile[0] ].name.lower() == "king":
+                    print("{} is in Check!".format(self.get_opposite_player()))
+                    self.player_info[self.get_opposite_player()]['is_in_check'] = True
+
 
     def move_piece( self, src, dest ):
 
@@ -468,12 +482,18 @@ class Chess:
 
             self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
             
-            self.board[dest[1]][dest[0]].pos = (dest[0], dest[1]) # Give it the new position tuple coordinate
+            # Give it the new position tuple coordinate
+            self.board[dest[1]][dest[0]].pos = (dest[0], dest[1]) 
 
+            # Let the piece know it was moved
             self.board[dest[1]][dest[0]].moved()
 
-            self.board[src[1]][src[0]] = "" # now that the piece has moved the board src tile is set to blank
+            # Check if the opponent is in check
 
+            self.is_opponent_in_check()
+
+            # now that the piece has moved the boards src tile is set to blank
+            self.board[src[1]][src[0]] = "" 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):
         # Returns a new instance of a pieces class based on the string given to this method
