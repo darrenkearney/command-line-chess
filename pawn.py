@@ -41,24 +41,27 @@ class Pawn(Piece):
         # Check for opponent pieces that would need to be taken
         #
         for tile_x in [self.pos[0]-1, self.pos[0]+1]:
-            # Only check within board
+            
+            # Only check within board (horizontal)
             if tile_x >= 0 and tile_x <= 7:
-                # Does the tile contain an opponent piece?
-                if self.is_opponent_at_tile( board[ self.pos[1]+y_direction ][ tile_x ] ) == True:
-                    # Add coordinates to available tiles
-                    self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
-        
 
+                # Only check within board (vertical)
+                if self.pos[1]+y_direction >= 0 and self.pos[1]+y_direction <= 7:
+
+                    # Does the tile contain an opponent piece?
+                    if self.is_opponent_at_tile( board[ self.pos[1]+y_direction ][ tile_x ] ) == True:
+                        # Add coordinates to available tiles
+                        self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
+        
         while total_available_moves > 0:
             print("PAWN MOVE TILE: {}".format(y_direction))
 
-                      
             # Cannot move out of bounds of the board
-            if self.pos[1] + y_direction <= 7 or self.pos[1] + y_direction >= 0:
+            if self.pos[1] + y_direction >= 0 and self.pos[1] + y_direction <= 7:
 
                 if self.is_piece_at_tile( board[ self.pos[1] + (total_available_moves * y_direction) ][ self.pos[0] ] ) == False:
                 
-                    self.available_tiles.append( ( self.pos[0], self.pos[1] + (total_available_moves * y_direction)) )
+                    self.available_tiles.append( ( self.pos[0], self.pos[1] + (total_available_moves * y_direction) ) )
 
             total_available_moves -= 1
 
