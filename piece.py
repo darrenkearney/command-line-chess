@@ -4,6 +4,7 @@ class Piece(object):
         
         self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
+        self.state_list = []
 
         for key, value in kwargs.items():
             setattr( self, key, value )
@@ -41,6 +42,15 @@ class Piece(object):
             return False
         
         return True
+
+
+    def get_state_of_piece( self ):
+        return self.state_list
+
+
+    def set_state_of_piece( self, state_list ):
+        self.state_list = state_list
+
 
     def is_piece_at_tile( self, board_tile ):
         # Returns True if opponent player has a piece on the tile

@@ -8,6 +8,7 @@ class Pawn(Piece):
         self.name = "Pawn"
         self.available_tiles = [] # array to store coords of available movement tiles
         self.is_first_move = True
+        self.state_list = []
 
         #self.pos = kwargs['pos'] # (x,y)
         for key, value in kwargs.items():
