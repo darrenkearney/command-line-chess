@@ -125,7 +125,6 @@ class Chess:
             if self.is_help_mode == True:
                 line_x = "      {} ".format( 8 - y )
 
-
             if y != self.cursor_pos[1]:
 
                 if self.is_piece_selected == True:
@@ -153,7 +152,6 @@ class Chess:
                         line_x += "{}".format( self.settings['cursor_move_left_char'] )
                     else:
                         line_x += "|"
-
 
             for x in range( len( self.board[y] ) ):
                 # Paint "Contents" of tile
@@ -210,7 +208,6 @@ class Chess:
                 if self.is_piece_selected == True:
                     # Okay, a piece is selected. Now we are in Move Mode.
 
-
                     if [x, y] != self.cursor_pos:
                         # If the currently rendering tile is not the cursor tile
                         # But it is adjacent to it
@@ -240,7 +237,6 @@ class Chess:
                         # Otherwise the current cursor is being rendered, so use the normal cursor
                         else:
                             line_x += self.settings['cursor_right_char']
-
 
                 if self.is_piece_selected == False:
 
@@ -345,7 +341,6 @@ class Chess:
             if self.cursor_pos[0] < len(self.board[self.cursor_pos[1]]) - 1:
                 self.cursor_pos[0] += 1
         
-        
         # Selecting a Piece on, entering move mode, then selecting it's desination or not
 
         if player_command.lower() == "x":
@@ -370,8 +365,6 @@ class Chess:
                 print("Using piece at {}".format(self.cursor_pos))
                 # pick up piece
                 self.select_piece()
-
-            
 
         print("Your command was '{}'. Cursor at {}".format(player_command, self.cursor_pos))
     
@@ -531,7 +524,8 @@ class Chess:
         else:
             # If not, remove it from this players list of check pieces
             if piece in self.player_info[self.current_player]['check_pieces']:
-                self.player_info[self.current_player]['check_pieces'].pop(piece)
+                i = self.player_info[self.current_player]['check_pieces'].index(piece)
+                self.player_info[self.current_player]['check_pieces'].pop(i)
 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):

@@ -54,7 +54,7 @@ class Pawn(Piece):
                         self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
         
         while total_available_moves > 0:
-            print("PAWN MOVE TILE: {}".format(y_direction))
+            print("PAWN Move y_direction: {}".format(y_direction))
 
             # Cannot move out of bounds of the board
             if self.pos[1] + y_direction >= 0 and self.pos[1] + y_direction <= 7:
