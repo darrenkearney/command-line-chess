@@ -27,6 +27,10 @@ def main():
         while is_playing:
 
             game.update()
+
+            if game.state['CHECKMATE'] == True:
+                print("\nThanks for playing chess. Goodbye!\n")
+                exit()
             
     except KeyboardInterrupt:
         print("\nThanks for playing chess. Goodbye!\n")

@@ -38,6 +38,7 @@ class Chess:
             'white_queen_char':     'Q',    # '♕',
             'white_rook_char':      'R'     # '♖'
         }
+
         self.player_command = ""
 
         self.is_help_mode = False
@@ -68,6 +69,10 @@ class Chess:
         self.cursor_pos = [0,0] # (x,y)
         
         self.selected_tile_pos = []
+
+        self.state = {
+            'CHECKMATE': False
+        }
 
         for item in kwargs.items():
             setattr( self, item )
@@ -261,7 +266,7 @@ class Chess:
         if self.is_help_mode == True:
             print("\t\tLowercase")
 
-        # Message Area
+        # Message / Debug Area
         if self.is_piece_selected == True:
             print("Selected: {}. Position: {}, Side: {}".format(
                 self.selected_piece.name,
@@ -274,6 +279,10 @@ class Chess:
             for player in [self.current_player, self.get_opposite_player()]:
                 if self.player_info[player]['is_in_check'] == True:
                     print("{} is in Check!".format( player ))
+                
+                print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
+
+                print("{} is_in_check: {}".format( player, self.player_info[self.get_opposite_player()]['is_in_check']))
 
         print("Current player: {}".format(self.current_player))
 
@@ -490,6 +499,10 @@ class Chess:
                     self.board[dest[1]][dest[0]].name
                 ))
 
+                # A piece is being taken. Add it to this players list of taken pieces.
+                self.player_info[self.current_player]['pieces_taken'].append(self.board[dest[1]][dest[0]].name)
+
+
             self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
             
             # Give it the new position tuple coordinate
@@ -646,26 +659,40 @@ class Chess:
 
         for player in [self.current_player, self.get_opposite_player()]:
 
-            if self.player_info[player]['check_pieces'] != []:
+            #if self.player_info[player]['check_pieces'] != []:
 
-                # For each piece in the list of check causing pieces
-                for piece in self.player_info[player]['check_pieces']:
+            # For each piece in the list of check causing pieces
+            for piece in self.player_info[player]['pieces']:
 
-                    self.update_state_of_piece(piece)
+                self.update_state_of_piece(piece)
 
-                    if self.is_piece_causing_check(piece):
+                if self.is_piece_causing_check(piece) == True:
 
-                        if piece not in self.player_info[player]['check_pieces']:
-                            self.player_info[player]['check_pieces'].append(piece)
-                        # If this piece is causing opponent to be in check, set it
-                        if self.player_info[self.get_opposite_player(player)]['is_in_check'] == False:
-                            self.player_info[self.get_opposite_player(player)]['is_in_check'] = True
- 
-                        else:
-                            # If not, remove it from this players list of check pieces
-                            if piece in self.player_info[self.current_player]['check_pieces']:
-                                i = self.player_info[self.current_player]['check_pieces'].index(piece)
-                                self.player_info[self.current_player]['check_pieces'].pop(i)
+                    # Add it to list of check causing pieces
+                    if piece not in self.player_info[player]['check_pieces']:
+                        self.player_info[player]['check_pieces'].append(piece)
+
+                    # If this piece is causing opponent to be in check, set it
+                    if self.player_info[self.get_opposite_player(player)]['is_in_check'] == False:
+                        self.player_info[self.get_opposite_player(player)]['is_in_check'] = True
+
+                    else:
+                        # If not, remove it from this players list of check pieces
+                        if piece in self.player_info[self.current_player]['check_pieces']:
+                            i = self.player_info[self.current_player]['check_pieces'].index(piece)
+                            self.player_info[self.current_player]['check_pieces'].pop(i)
+
+        if self.player_info[self.get_opposite_player()]['is_in_check'] == True:
+
+            for piece in self.player_info[self.current_player]['pieces_taken']:
+                if piece.lower() == "king":
+
+                    self.state['CHECKMATE'] = True
+
+                    print("CHECKMATE!")
+
+                    print("Thanks for playing.")
+
 
 
     def update_state_of_piece( self, piece ):
