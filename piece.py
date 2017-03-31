@@ -26,7 +26,7 @@ class Piece(object):
 
         return available_tiles
 
-    def get_possible_moves( self, board = [[]], current_player = "" ):
+    def get_possible_moves( self, board = [[]], player = "" ):
         return self.filter_available_tiles([])
 
     def is_opponent_at_tile( self, board_tile ):

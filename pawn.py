@@ -14,7 +14,7 @@ class Pawn(Piece):
         for key, value in kwargs.items():
             setattr( self, key, value )
 
-    def get_possible_moves( self, board, current_player):
+    def get_possible_moves( self, board, player):
         # The games board is board[y][x] but every reference to a position is (x,y)
         # A for loop that checks for possible movement of this piece on the game board.
         # Returns array of coordinate tuples of legal tiles available for the piece to move into.
@@ -32,10 +32,10 @@ class Pawn(Piece):
         #
         # Pawn advancement direction
         #
-        if current_player == "uppercase":
+        if player == "uppercase":
             y_direction = 1
 
-        if current_player == "lowercase":
+        if player == "lowercase":
             y_direction = -1
 
         #
@@ -58,7 +58,7 @@ class Pawn(Piece):
             print("PAWN Move y_direction: {}".format(y_direction))
 
             # Cannot move out of bounds of the board
-            if self.pos[1] + y_direction >= 0 and self.pos[1] + y_direction <= 7:
+            if self.pos[1] + (total_available_moves * y_direction) >= 0 and self.pos[1] + (total_available_moves * y_direction) <= 7:
 
                 if self.is_piece_at_tile( board[ self.pos[1] + (total_available_moves * y_direction) ][ self.pos[0] ] ) == False:
                 

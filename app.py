@@ -9,7 +9,6 @@ def main():
     # The main game loop
     is_playing = True
 
-
     game = Chess()
     game.turn_count = 0
 
@@ -27,10 +26,12 @@ def main():
         while is_playing:
 
             game.update()
-
+        
             if game.state['CHECKMATE'] == True:
-                print("\nThanks for playing chess. Goodbye!\n")
-                exit()
+                is_playing = False
+        else:
+            print("\nThanks for playing chess. Goodbye!\n")
+            exit()
             
     except KeyboardInterrupt:
         print("\nThanks for playing chess. Goodbye!\n")

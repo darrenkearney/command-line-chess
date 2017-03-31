@@ -45,6 +45,8 @@ class Chess:
 
         self.is_piece_selected = False
 
+        self.is_turn_ended = False
+
         self.current_player = 'uppercase'
 
         self.player_info = {
@@ -53,14 +55,16 @@ class Chess:
                 'is_in_check': False,
                 'last_cursor_pos': [0,0],
                 'name': "Player 1",
-                'pieces_taken': []
+                'pieces_taken': [],
+                'pieces': []
             },
             self.get_opposite_player() : {
                 'check_pieces' : [],
                 'is_in_check': False,
                 'last_cursor_pos': [7,7],
                 'name': "Player 2",
-                'pieces_taken': []
+                'pieces_taken': [],
+                'pieces': []
             }
         }
 
@@ -277,12 +281,10 @@ class Chess:
 
             # Display who is in a Check state
             for player in [self.current_player, self.get_opposite_player()]:
-                if self.player_info[player]['is_in_check'] == True:
-                    print("{} is in Check!".format( player ))
+                
+                print("{} is_in_check: {}".format( player, self.player_info[player]['is_in_check'] ))
                 
                 print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
-
-                print("{} is_in_check: {}".format( player, self.player_info[self.get_opposite_player()]['is_in_check']))
 
         print("Current player: {}".format(self.current_player))
 
@@ -350,7 +352,7 @@ class Chess:
                     
                     self.is_piece_selected = False # Deselect piece
 
-                    self.end_turn()
+                    self.is_turn_ended = True
 
                 else:
                     print("Cannot move to that tile.")
@@ -376,6 +378,9 @@ class Chess:
 
         # Set cursor to players side
         self.cursor_pos = self.player_info[self.current_player]['last_cursor_pos']
+
+        # Reset is turn ended check
+        self.is_turn_ended = False
 
 
     def get_board_string( self ):
@@ -454,33 +459,70 @@ class Chess:
         return False
 
 
-    def is_piece_causing_check( self, piece ):
+    def is_piece_causing_check( self, piece, player = None ):
         # Just a handy way to check if a piece is causing check.
         # Returns True or False
 
-        is_piece_causing_check = False # Default
+        if player == None:
+            player = self.current_player
+        
          
         # Detect state
         # Check it's currently available move tiles for presence of king
-        for tile in piece.get_possible_moves(
-            board = self.board,
-            current_player = self.current_player
-        ):
-        
-            p = self.board[tile[1]][tile[0]]
- 
-            try:
-        
-                if p.name.lower() == 'king' and p.side == self.get_opposite_player():
-                    # If king is present set opponent's check to True
-                    is_piece_causing_check = True
- 
-            except AttributeError:
- 
-                # In case of an empty tile, just pass
-                pass
 
-        return is_piece_causing_check
+        available_tiles = piece.get_possible_moves(
+            board = self.board,
+            player = player
+        )
+
+        for tile in available_tiles:
+
+            if self.is_piece_at_tile( tile ) == True:
+
+                p = self.board[tile[1]][tile[0]]
+
+                print("@@@@ piece at tile. piece.name = {}, p.side = {}".format(p.name.lower(), p.side))
+
+                if p.name.lower() == 'king' and p.side == self.get_opposite_player(player):
+                        # If king is present set opponent's check to True
+
+                        print("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
+
+                        return True
+     
+        print("@@@@ Piece {} not causing Check!".format(piece))
+
+        return False
+
+
+            # try:
+        
+            #     if p.name.lower() == 'king' and p.side == self.get_opposite_player().side:
+            #         # If king is present set opponent's check to True
+            #         is_piece_causing_check = True
+ 
+            # except AttributeError:
+ 
+            #     # In case of an empty tile, just pass
+            #     print("Attribute Error in Chess.is_piece_causing_check()")
+            #     continue
+            
+            # else:
+            #     return is_piece_causing_check
+
+
+    def is_piece_at_tile( self, coords ):
+
+        # Returns True if opponent player has a piece on the tile
+        
+        if type(self.board[coords[1]][coords[0]]) == str:
+            return False
+
+        if self.board[coords[1]][coords[0]].side in ["uppercase", "lowercase"]:
+            print("+-+-+-+-+-+-+    Something at tile {} and it's type is {}".format(coords, type(self.board[coords[1]][coords[0]]) ))
+            return True
+
+        return False
 
 
     def move_piece( self, src, dest ):
@@ -622,16 +664,21 @@ class Chess:
             for tile in range( len( self.board[0] ) ):
                 #char = board_setup_stack[tile]
                 self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
+                self.player_info[self.current_player]['pieces'].append(self.board[0][tile])
             
             for tile in range( len( self.board[1] ) ):
                 self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
-            
+                self.player_info[self.current_player]['pieces'].append(self.board[1][tile])
+
             for tile in range( len( self.board[6] ) ):
                 self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
-            
+                self.player_info[self.get_opposite_player()]['pieces'].append(self.board[6][tile])
+
             for tile in range( len( self.board[7] ) ):
                 self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
+                self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
 
+            print("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
 
     def update( self ):
         # Run a "Frame" (typically on executing a command)
@@ -640,10 +687,10 @@ class Chess:
         self.display()
 
         # Get input
-        self.player_command = input("Enter a command: ")
+        self.player_command = input(" > ")
         self.add_command( self.player_command )
 
-        # Do command
+        # Do command (such as move)
         # If the command list is not empty, pop a command and do it.
         if self.command_list != []:
             self.do_command(self.command_list.pop())
@@ -657,30 +704,42 @@ class Chess:
 
     def update_state_of_board( self ):
 
+        ##
+        ## Update both players
+        ##
+
+        # For each player
         for player in [self.current_player, self.get_opposite_player()]:
-
-            #if self.player_info[player]['check_pieces'] != []:
-
-            # For each piece in the list of check causing pieces
+            # For each piece owned by player
             for piece in self.player_info[player]['pieces']:
 
-                self.update_state_of_piece(piece)
+                # Update piece state
+                self.update_state_of_piece(piece, player)
 
-                if self.is_piece_causing_check(piece) == True:
+                # If this piece has a king in it's available tiles, cause check
+                if self.is_piece_causing_check(piece, player) == True:
 
                     # Add it to list of check causing pieces
-                    if piece not in self.player_info[player]['check_pieces']:
-                        self.player_info[player]['check_pieces'].append(piece)
+                    if piece.pos not in self.player_info[player]['check_pieces']:
+                        self.player_info[player]['check_pieces'].append(piece.pos)
 
                     # If this piece is causing opponent to be in check, set it
                     if self.player_info[self.get_opposite_player(player)]['is_in_check'] == False:
                         self.player_info[self.get_opposite_player(player)]['is_in_check'] = True
 
-                    else:
-                        # If not, remove it from this players list of check pieces
-                        if piece in self.player_info[self.current_player]['check_pieces']:
-                            i = self.player_info[self.current_player]['check_pieces'].index(piece)
-                            self.player_info[self.current_player]['check_pieces'].pop(i)
+                elif self.is_piece_causing_check(piece, player) == False:
+                    # If not, remove it from this players list of check pieces
+                    if piece.pos in self.player_info[player]['check_pieces']:
+                        i = self.player_info[player]['check_pieces'].index(piece.pos)
+                        self.player_info[player]['check_pieces'].pop(i)
+
+        # Debug log
+        print("@@@@ {} check pieces {}".format(self.current_player, self.player_info[self.current_player]['check_pieces']))
+        print("@@@@ {} check pieces {}".format(self.get_opposite_player(), self.player_info[self.get_opposite_player()]['check_pieces']))
+
+        ##
+        ##  Do stuff for current player with current check state
+        ##
 
         if self.player_info[self.get_opposite_player()]['is_in_check'] == True:
 
@@ -691,20 +750,32 @@ class Chess:
 
                     print("CHECKMATE!")
 
-                    print("Thanks for playing.")
+        ## End players turn if it's done
+        if self.is_turn_ended == True:
+            self.end_turn()
+
+        #
+        #   Update check state
+        #
+
+        for player in [self.current_player, self.get_opposite_player()]:
+            if len(self.player_info[player]['check_pieces']) == 0:
+                self.player_info[self.get_opposite_player(player)]['is_in_check'] = False
 
 
-
-    def update_state_of_piece( self, piece ):
+    def update_state_of_piece( self, piece, player = None ):
         # Piece specific state management
+
+        if player == None:
+            player = self.current_player
 
         # Get old state
         state_list = self.get_state_of_piece( piece )
 
         # Is it now causing check?
-        is_causing_check = self.is_piece_causing_check( piece )
+        is_causing_check = self.is_piece_causing_check( piece, player )
 
-        if is_causing_check:
+        if is_causing_check == True:
             if "PIECE_CAUSES_CHECK" not in state_list:
                 state_list.append("PIECE_CAUSES_CHECK")
 
