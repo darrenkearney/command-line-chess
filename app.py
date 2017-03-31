@@ -15,12 +15,7 @@ def main():
     print("\nLet's play chess.\n")
 
     # This command menu      
-    print(
-"""Commands:
-    Move Cursor = w (up) / s (down / a (left) / d (right)
-    Select Piece = x
-    Help (display this menu) = h / ? / help
-""")
+    print(game.get_help_menu())
 
     try:
         while is_playing:

@@ -5,6 +5,7 @@ from knight import Knight
 from pawn   import Pawn
 from queen  import Queen
 from rook   import Rook
+import os
 
 class Chess:
 
@@ -85,10 +86,6 @@ class Chess:
 
 
     def add_command( self, command ):
-
-        # if type(command) == list:
-        #     for c in command:
-        #         self.command_list.append(command)
 
         self.command_list.append(command)
 
@@ -270,7 +267,10 @@ class Chess:
         if self.is_help_mode == True:
             print("\t\tLowercase")
 
+        #
         # Message / Debug Area
+        #
+
         if self.is_piece_selected == True:
             print("Selected: {}. Position: {}, Side: {}".format(
                 self.selected_piece.name,
@@ -293,7 +293,10 @@ class Chess:
 
     def do_command( self, player_command ):
 
+        #
         # Reset help mode
+        #
+
         if self.is_help_mode == True:
             self.is_help_mode = False
 
@@ -303,22 +306,61 @@ class Chess:
 
         if player_command.lower() in ["h", "help", "?"]:
             self.is_help_mode = True
-            print("Help menu")
-            print(
-"""Commands:
-    Help (display this menu) = h / ? / help
-    Move Cursor = w (up) / s (down / a (left) / d (right)
-    Select Piece = x
-""")
+            print("{}".format(self.get_help_menu()))
+
         if player_command.lower() == "debug":
-            print(
-"""Command List: {}
-""".format(
-                self.command_list
-            ))
+            print("{}".format(self.get_debug_log()))
 
+        #
+        # Save
+        #
+        if player_command == "save":
+            player_command = "Save Game"
+            print("THIS FEATURE IS INCOMPLETE. WARNING!")
+            
+            file_name = input(" Enter save name: ")
+
+            path = os.path.dirname(os.path.abspath(__file__))            
+            path = path + '/saves/{}.csv'.format(file_name)
+
+            print("Saving...")
+
+            save_file = open(path,'wt')
+            save_game = self.get_board_string()
+            save_game += "current_player,{}\n".format(self.current_player)
+            save_file.write(save_game)
+            save_file.close()
+            
+            print("Saved.")
+
+        #
+        # Load
+        #
+        if player_command == "load":
+            print("THIS FEATURE IS INCOMPLETE. WARNING!")
+            player_command = "Load Game"
+            
+            path = os.path.dirname(os.path.abspath(__file__))            
+            path = path + '/saves/'
+
+            print("Saves:\n{}".format( os.listdir(path) ) )
+
+            file_name = input(" Enter file name: ")
+            path = path + '{}.csv'.format(file_name)
+
+            print("Loading...")
+
+            load_file = open(path,'rt')
+            save_game = load_file.read()
+            load_file.close()
+
+            print("Here is the loaded file \n{}".format(save_game))
+
+
+        #
         # Cursor Movement
-
+        #
+        
         if player_command.lower() == "s":
             print("Down")
             if self.cursor_pos[1] < len(self.board) - 1:
@@ -342,7 +384,6 @@ class Chess:
         # Selecting a Piece on, entering move mode, then selecting it's desination or not
 
         if player_command.lower() == "x":
-
 
             if self.is_piece_selected == True:
                 if (self.cursor_pos[0],self.cursor_pos[1]) in self.selected_piece.available_tiles:
@@ -387,38 +428,32 @@ class Chess:
 
         output_string = ""
 
-        # Keeps track of alternating board tiles for rendering bg
-        alt = 0
-
         for y in range( len(self.board) ):
 
-            line_x = "|"
+            #line_x = "|"
+            line_x = ""
 
             for x in range( len(self.board[y]) ):
                 
                 # If there is nothing on the board tile use bg color
                 if self.board[y][x] == "":
-                
-                    if alt % 2 == 0:
-                        line_x += "::|"
-                
-                    else:
-                        line_x += "  |"
+
+                    line_x +="0"
+
                 else:
-                    if alt % 2 == 0:
-                        line_x += "{}:|".format( self.board[y][x] )
-                
-                    else:
-                        line_x += "{} |".format( self.board[y][x] )
+
+                    line_x += "{}".format( self.board[y][x] )
                     
-                alt += 1
 
             output_string += "{}\n".format( line_x )
-
-            alt += 1
             
         # Return the output string
         return output_string
+
+
+    def get_debug_log( self ):
+        # Add more stuff there
+        return "Command List: {}".format(self.command_list)
 
 
     def get_opposite_player( self, player = None ):
@@ -493,22 +528,6 @@ class Chess:
         print("@@@@ Piece {} not causing Check!".format(piece))
 
         return False
-
-
-            # try:
-        
-            #     if p.name.lower() == 'king' and p.side == self.get_opposite_player().side:
-            #         # If king is present set opponent's check to True
-            #         is_piece_causing_check = True
- 
-            # except AttributeError:
- 
-            #     # In case of an empty tile, just pass
-            #     print("Attribute Error in Chess.is_piece_causing_check()")
-            #     continue
-            
-            # else:
-            #     return is_piece_causing_check
 
 
     def is_piece_at_tile( self, coords ):
@@ -679,6 +698,30 @@ class Chess:
                 self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
 
             print("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
+
+
+    def get_help_menu( self ):
+
+        return """
+Help menu
+
+    Commands:
+
+        help            Help (display this menu) = h / ? / help
+        save            Save current game to file (in saves/ directory)
+        load            Load game from file
+
+    Cursor Commands:
+
+        w               up
+        s               down
+        a               left
+        d               right
+
+        x               (no selection)   Select Piece at cursor
+        x               (piece selected) Move the selected piece to cursor 
+"""
+
 
     def update( self ):
         # Run a "Frame" (typically on executing a command)
