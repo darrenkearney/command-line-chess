@@ -17,6 +17,30 @@ class Rook(Piece):
         for key, value in kwargs.items():
             setattr( self, key, value )
 
+    def recursive_tile_scanner( self, direction ):
+        # Unfinished
+        # Scans tiles in direction
+
+        x = direction[0]
+        y = direction[1]
+
+        if self.pos[0] == 7:
+            break
+
+        if self.pos[0] == 0:
+            break
+
+        if self.pos[1] == 7:
+            break
+
+        if self.pos[1] == 0:
+            break
+
+        if self.pos[0] + x <= 7:
+            pass
+
+        recursive_tile_scanner( direction )
+
 
     def get_possible_moves( self, board, player ):
         # The games board is board[y][x] but every reference to a position is (x,y)
