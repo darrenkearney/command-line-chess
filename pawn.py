@@ -14,7 +14,7 @@ class Pawn(Piece):
         for key, value in kwargs.items():
             setattr( self, key, value )
 
-    def get_possible_moves( self, board, player):
+    def get_possible_moves( self, board, player ):
         # The games board is board[y][x] but every reference to a position is (x,y)
         # A for loop that checks for possible movement of this piece on the game board.
         # Returns array of coordinate tuples of legal tiles available for the piece to move into.
@@ -34,9 +34,14 @@ class Pawn(Piece):
         #
         if player == "uppercase":
             y_direction = 1
+            #print("get possible moves player uppercase {}".format(player))
 
-        if player == "lowercase":
+        elif player == "lowercase":
             y_direction = -1
+            #print("get possible moves player lowercase {}".format(player))
+
+        else:
+            print("@@@@ Oddly player is neither uppercase or lowercase, its {}".format(player))
 
         #
         # Check for opponent pieces that would need to be taken
@@ -73,10 +78,10 @@ class Pawn(Piece):
         if self.is_first_move == True:
             self.is_first_move = False
 
-    def select( self, board, current_player ):
+    def select( self, board, player ):
 
         #available_tiles = self.possible_moves()
-        self.get_possible_moves( board, current_player )
+        self.get_possible_moves( board, player )
         print("Available Tiles: {}".format(self.available_tiles))
 
         # Now that we have taken a move with the tile set this first move to false so we cannot do more

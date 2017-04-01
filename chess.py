@@ -5,7 +5,10 @@ from knight import Knight
 from pawn   import Pawn
 from queen  import Queen
 from rook   import Rook
-import os
+import io    #
+import json  # These imports are for saving and loading games to files
+import os    #
+
 
 class Chess:
 
@@ -37,10 +40,11 @@ class Chess:
             'white_knight_char':    'N',    # '♘',
             'white_pawn_char':      'P',    # '♙',
             'white_queen_char':     'Q',    # '♕',
-            'white_rook_char':      'R'     # '♖'
+            'white_rook_char':      'R',    # '♖',
+            'save_file_extension': '.savegame'
         }
 
-        self.player_command = ""
+        self.command = ""
 
         self.is_help_mode = False
 
@@ -79,10 +83,17 @@ class Chess:
             'CHECKMATE': False
         }
 
+        # Override defaults with given values
         for item in kwargs.items():
             setattr( self, item )
 
-        self.setup_game_board()
+        # If given a command on init, hop to and do it (such as 'load')
+        if self.command != "":
+            self.do_command( self.command )
+
+        # Otherwise, we'll start a new game (with defaults & overrides)
+        else:
+            self.setup_game_board()
 
 
     def add_command( self, command ):
@@ -291,99 +302,69 @@ class Chess:
         print("~" * 42)
 
 
-    def do_command( self, player_command ):
+    def do_command( self, command ):
+        # Executes command assigned to given string
 
         #
         # Reset help mode
         #
-
         if self.is_help_mode == True:
             self.is_help_mode = False
 
-        if player_command == "":
+        if command == "":
             print("None")
-            player_command = "None"
+            command = "None"
 
-        if player_command.lower() in ["h", "help", "?"]:
+        if command.lower() in ["h", "help", "?"]:
             self.is_help_mode = True
             print("{}".format(self.get_help_menu()))
 
-        if player_command.lower() == "debug":
+        if command.lower() == "debug":
             print("{}".format(self.get_debug_log()))
 
         #
         # Save
         #
-        if player_command == "save":
-            player_command = "Save Game"
-            print("THIS FEATURE IS INCOMPLETE. WARNING!")
+        if command == "save":
+            self.save_game()
             
-            file_name = input(" Enter save name: ")
-
-            path = os.path.dirname(os.path.abspath(__file__))            
-            path = path + '/saves/{}.csv'.format(file_name)
-
-            print("Saving...")
-
-            save_file = open(path,'wt')
-            save_game = self.get_board_string()
-            save_game += "current_player,{}\n".format(self.current_player)
-            save_file.write(save_game)
-            save_file.close()
-            
-            print("Saved.")
-
         #
         # Load
         #
-        if player_command == "load":
-            print("THIS FEATURE IS INCOMPLETE. WARNING!")
-            player_command = "Load Game"
-            
-            path = os.path.dirname(os.path.abspath(__file__))            
-            path = path + '/saves/'
+        if command == "load":
+            self.load_game()
 
-            print("Saves:\n{}".format( os.listdir(path) ) )
-
-            file_name = input(" Enter file name: ")
-            path = path + '{}.csv'.format(file_name)
-
-            print("Loading...")
-
-            load_file = open(path,'rt')
-            save_game = load_file.read()
-            load_file.close()
-
-            print("Here is the loaded file \n{}".format(save_game))
-
+        if command == "exit" or command == "quit":
+            print("\nThanks for playing chess. Goodbye!\n")
+            exit()
 
         #
         # Cursor Movement
         #
-        
-        if player_command.lower() == "s":
+        if command.lower() == "s":
             print("Down")
             if self.cursor_pos[1] < len(self.board) - 1:
                 self.cursor_pos[1] += 1
 
-        if player_command.lower() == "w":
+        if command.lower() == "w":
             print("Up")
             if self.cursor_pos[1] > 0:
                 self.cursor_pos[1] -= 1
 
-        if player_command.lower() == "a":
+        if command.lower() == "a":
             print("Left")
             if self.cursor_pos[0] > 0:
                 self.cursor_pos[0] -= 1
 
-        if player_command.lower() == "d":
+        if command.lower() == "d":
             print("Right")
             if self.cursor_pos[0] < len(self.board[self.cursor_pos[1]]) - 1:
                 self.cursor_pos[0] += 1
 
+        #
         # Selecting a Piece on, entering move mode, then selecting it's desination or not
-
-        if player_command.lower() == "x":
+        #
+        if command.lower() == "x":
 
             if self.is_piece_selected == True:
                 if (self.cursor_pos[0],self.cursor_pos[1]) in self.selected_piece.available_tiles:
@@ -403,9 +384,9 @@ class Chess:
             elif self.is_piece_selected == False:
                 print("Using piece at {}".format(self.cursor_pos))
                 # pick up piece
-                self.select_piece()
+                self.select_piece( coords = self.cursor_pos )
 
-        print("Your command was '{}'. Cursor at {}".format(player_command, self.cursor_pos))
+        print("Your command was '{}'. Cursor at {}".format(command, self.cursor_pos))
     
 
     def end_turn( self ):
@@ -454,6 +435,29 @@ class Chess:
     def get_debug_log( self ):
         # Add more stuff there
         return "Command List: {}".format(self.command_list)
+
+
+    def get_help_menu( self ):
+
+        return """
+Help menu
+
+    Commands:
+
+        help            Help (display this menu) = h / ? / help
+        save            Save current game to file (in saves/ directory)
+        load            Load game from file
+
+    Cursor Commands:
+
+        w               up
+        s               down
+        a               left
+        d               right
+
+        x               (no selection)   Select Piece at cursor
+        x               (piece selected) Move the selected piece to cursor
+"""
 
 
     def get_opposite_player( self, player = None ):
@@ -544,6 +548,78 @@ class Chess:
         return False
 
 
+    def load_game( self ):
+        print("WARNING! THIS FEATURE IS INCOMPLETE!")
+
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path + '/saves/'
+
+        save_files = os.listdir(path)
+        saves = []
+        for save in save_files:
+            if '.' in save:
+                save = save.split('.')
+                if save[1] == 'savegame':
+                    saves.append(save[0])
+
+        save_str_ = ''
+        for save in saves:
+            save_str_ += "\t{}) {}\n".format( saves.index(save) + 1, save)
+
+        print("Pick a save to load:\n{}".format( save_str_ ))
+
+        choice = self.input_int()
+        if choice == None:
+            print("No save game was chosen, so we'll go back.")
+            return None
+
+        save_name = saves[choice-1]
+        path = path + '{}{}'.format(save_name, self.settings['save_file_extension'])
+
+        print("Loading...")
+
+        # load_file = open(path,'rt')
+        # save_game = load_file.read()
+        # load_file.close()
+
+        # Read JSON file
+        with open(path) as data_file:
+            data_loaded = json.load(data_file)
+
+        self.current_player = data_loaded['current_player']
+
+        # Set up board
+        self.setup_game_board(data_loaded['board'])
+
+        self.player_info['uppercase']['pieces_taken'] = data_loaded['player_info']['uppercase']['pieces_taken']
+        self.player_info['lowercase']['pieces_taken'] = data_loaded['player_info']['lowercase']['pieces_taken']
+        self.player_info['uppercase']['last_cursor_pos'] = data_loaded['player_info']['uppercase']['last_cursor_pos']
+        self.player_info['lowercase']['last_cursor_pos'] = data_loaded['player_info']['lowercase']['last_cursor_pos']
+        self.cursor_pos = data_loaded['cursor_pos']
+
+        print("Here is the loaded file data \n{}".format(data_loaded))
+
+
+    def input_int( self ):
+        # A handy reusable way of getting int from player/user
+
+        while True:
+            try:
+                choice = input(" > ")
+                choice = int(choice)
+
+            except ValueError:
+                print("{} is not a number.".format(choice))
+                continue
+
+            except KeyboardInterrupt:
+                print("Exiting menu.")
+                return None
+
+            else:
+                return choice
+
+
     def move_piece( self, src, dest ):
 
         # Generic move method - this is part of the chess class and not the piece class.
@@ -603,9 +679,65 @@ class Chess:
         return Piece( char = char, pos = pos, side = side )
 
 
-    def select_piece( self ):
-        x = self.cursor_pos[0]
-        y = self.cursor_pos[1]
+    def save_game( self ):
+        # Save a game to file.
+        # Saves in saves/ subfolder of game directory.
+        # Uses .savegame extension by default ( set in game settings )
+        print("WARNING! THIS FEATURE IS INCOMPLETE!")
+
+        save_name = input(" Enter save name: ")
+
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path + '/saves/{}{}'.format(save_name, self.settings['save_file_extension'])
+
+        print("Saving...")
+
+        # Define data to save
+
+        data = {
+            'board': self.get_board_string(),
+            'current_player': self.current_player,
+            'cursor_pos': self.cursor_pos,
+            'player_info': {
+                'lowercase': {
+                    'name': self.player_info['lowercase']['name'],
+                    'pieces_taken': self.player_info['lowercase']['pieces_taken'],
+                    'last_cursor_pos': self.player_info['lowercase']['last_cursor_pos']
+                },
+                'uppercase': {
+                    'name': self.player_info['uppercase']['name'],
+                    'pieces_taken': self.player_info['uppercase']['pieces_taken'],
+                    'last_cursor_pos': self.player_info['uppercase']['last_cursor_pos']
+                }
+            }
+        }
+
+        try:
+            to_unicode = unicode
+        except NameError:
+            to_unicode = str
+
+        # Write JSON file
+        with io.open(path,'wt', encoding='utf8') as save_file:
+            str_ = json.dumps(data,
+                              indent=4,
+                              sort_keys=True,
+                              separators=(',',':'),
+                              ensure_ascii=False)
+
+            save_file.write(to_unicode(str_))
+
+        print("Saved.")
+
+
+    def select_piece( self, coords = None):
+
+        if coords == None:
+            x = self.cursor_pos[0]
+            y = self.cursor_pos[1]
+        else:
+            x = coords[0]
+            y = coords[1]
 
         # If nothing is selected, select nothing
         if self.board[y][x] == "":
@@ -615,16 +747,17 @@ class Chess:
 
         if self.current_player != self.board[y][x].side:
             if self.is_piece_selected == False:
-                print("Cannot select the other player's piece.")
+                print("Cannot select the other player's piece. (You: {}, Piece: {})".format(self.current_player, self.board[y][x].side))
                 return False
             else:
-                print("Taking enemy pieces is not yet implemented! Sorry :O")
+                print("Taking enemy pieces is not yet implemented properly! Sorry :O")
                 return False
 
+        # Tell the game that a piece is selected
         self.is_piece_selected = True
 
         # trigger the select method on the piece and pass in the game board
-        self.board[y][x].select( board = self.board, current_player = self.current_player ) 
+        self.board[y][x].select( board = self.board, player = self.current_player )
 
         self.selected_piece = self.board[y][x]
         print("Selected: {}. Position: {}, Side: {}".format(
@@ -642,85 +775,121 @@ class Chess:
         piece.state_list = state_list
 
 
-    def setup_game_board( self ):
+    def setup_game_board( self, game_board_string = None ):
         # Sets up the two dimensional array for referencing the game pieces
 
-        self.board = []
-        for y in range( self.settings[ 'max_y' ] ):
-            line_x = []
-            
-            for x in range( self.settings[ 'max_x' ] ):
-                line_x.append( "" ) # Empty board tiles are empty strings
-            
-            self.board.append( line_x )
 
-        # Just in case we add more game modes with odd setups
-        if self.settings['game_mode'] == 'normal':
+        if game_board_string != None:
+            # In the event of a game is being loaded
 
-            # board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
-            board_setup_stack = [
-                [
-                    self.settings['black_rook_char'],
-                    self.settings['black_knight_char'],
-                    self.settings['black_bishop_char'],
-                    self.settings['black_king_char'],
-                    self.settings['black_queen_char'],
-                    self.settings['black_bishop_char'],
-                    self.settings['black_knight_char'],
-                    self.settings['black_rook_char']
-                ],[
-                    self.settings['white_rook_char'],
-                    self.settings['white_knight_char'],
-                    self.settings['white_bishop_char'],
-                    self.settings['white_king_char'],
-                    self.settings['white_queen_char'],
-                    self.settings['white_bishop_char'],
-                    self.settings['white_knight_char'],
-                    self.settings['white_rook_char']
-                ]]
+            # Reset board
+            self.board = []
+            self.player_info["uppercase"]['pieces'] = []
+            self.player_info["lowercase"]['pieces'] = []
 
+            for y in range(0, 8):
+                line_x = []
 
-            for tile in range( len( self.board[0] ) ):
-                #char = board_setup_stack[tile]
-                self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
-                self.player_info[self.current_player]['pieces'].append(self.board[0][tile])
-            
-            for tile in range( len( self.board[1] ) ):
-                self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
-                self.player_info[self.current_player]['pieces'].append(self.board[1][tile])
+                for x in range(0, 8):
+                    line_x.append( "" ) # Empty board tiles are empty strings
 
-            for tile in range( len( self.board[6] ) ):
-                self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
-                self.player_info[self.get_opposite_player()]['pieces'].append(self.board[6][tile])
+                self.board.append( line_x )
 
-            for tile in range( len( self.board[7] ) ):
-                self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
-                self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
+            # Set up piece validator against settings
+            board_setup_validator = [
+            [
+                self.settings['black_bishop_char'],
+                self.settings['black_king_char'],
+                self.settings['black_knight_char'],
+                self.settings['black_pawn_char'],
+                self.settings['black_queen_char'],
+                self.settings['black_rook_char']
+            ],[
+                self.settings['white_bishop_char'],
+                self.settings['white_king_char'],
+                self.settings['white_knight_char'],
+                self.settings['white_pawn_char'],
+                self.settings['white_queen_char'],
+                self.settings['white_rook_char']
+            ]]
 
-            print("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
+            game_board_split = game_board_string.split()
 
+            for y in range( len(self.board[y]) ):
 
-    def get_help_menu( self ):
+                for x in range( len(self.board[y]) ):
 
-        return """
-Help menu
+                    print("@@@@ game_board_split[y][x] = {}".format(game_board_split[y][x]))
 
-    Commands:
+                    if game_board_split[y][x] in board_setup_validator[0]:
+                        self.board[y][x] = self.new_piece( char = game_board_split[y][x], pos = (x, y), side = "lowercase" )
+                        self.player_info["lowercase"]['pieces'].append(self.board[y][x])
 
-        help            Help (display this menu) = h / ? / help
-        save            Save current game to file (in saves/ directory)
-        load            Load game from file
+                    elif game_board_split[y][x] in board_setup_validator[1]:
+                        self.board[y][x] = self.new_piece( char = game_board_split[y][x], pos = (x, y), side = "uppercase" )
+                        self.player_info["uppercase"]['pieces'].append(self.board[y][x])
 
-    Cursor Commands:
+                    elif game_board_split[y][x] == 0:
+                        self.board[y][x] = ""
 
-        w               up
-        s               down
-        a               left
-        d               right
+            return "Board data loaded into game."
 
-        x               (no selection)   Select Piece at cursor
-        x               (piece selected) Move the selected piece to cursor 
-"""
+        elif game_board_string == None:
+            # Just in case we add more game modes with odd setups
+            if self.settings['game_mode'] == 'normal':
+
+                self.board = []
+
+                for y in range( self.settings[ 'max_y' ] ):
+                    line_x = []
+
+                    for x in range( self.settings[ 'max_x' ] ):
+                        line_x.append( "" ) # Empty board tiles are empty strings
+
+                    self.board.append( line_x )
+
+                # board_setup_stack = ['r','n','b','k','q','b','n','r'] # array of pieces
+                board_setup_stack = [
+                    [
+                        self.settings['black_rook_char'],
+                        self.settings['black_knight_char'],
+                        self.settings['black_bishop_char'],
+                        self.settings['black_king_char'],
+                        self.settings['black_queen_char'],
+                        self.settings['black_bishop_char'],
+                        self.settings['black_knight_char'],
+                        self.settings['black_rook_char']
+                    ],[
+                        self.settings['white_rook_char'],
+                        self.settings['white_knight_char'],
+                        self.settings['white_bishop_char'],
+                        self.settings['white_king_char'],
+                        self.settings['white_queen_char'],
+                        self.settings['white_bishop_char'],
+                        self.settings['white_knight_char'],
+                        self.settings['white_rook_char']
+                    ]]
+
+                for tile in range( len( self.board[0] ) ):
+                    #char = board_setup_stack[tile]
+                    self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
+                    self.player_info[self.current_player]['pieces'].append(self.board[0][tile])
+
+                for tile in range( len( self.board[1] ) ):
+                    self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
+                    self.player_info[self.current_player]['pieces'].append(self.board[1][tile])
+
+                for tile in range( len( self.board[6] ) ):
+                    self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
+                    self.player_info[self.get_opposite_player()]['pieces'].append(self.board[6][tile])
+
+                for tile in range( len( self.board[7] ) ):
+                    self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
+                    self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
+
+                print("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
+
+            return "New board set up."
 
 
     def update( self ):
@@ -730,8 +899,8 @@ Help menu
         self.display()
 
         # Get input
-        self.player_command = input(" > ")
-        self.add_command( self.player_command )
+        self.command = input(" > ")
+        self.add_command( self.command )
 
         # Do command (such as move)
         # If the command list is not empty, pop a command and do it.

@@ -12,7 +12,7 @@ class Piece(object):
     def __str__( self ):
         return "{}".format(self.char)
 
-    def select( self, board = [[]], current_player = ""):
+    def select( self, board = [[]], player = ""):
         pass
 
     def filter_available_tiles( self, available_tiles = [] ):

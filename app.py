@@ -1,23 +1,52 @@
-# Chess
+# Command Line Chess
 # Author: Darren Kearney
+# https://github.com/darrenkearney
 
 from chess import Chess
 
 
 def main():
 
-    # The main game loop
-    is_playing = True
-
-    game = Chess()
-    game.turn_count = 0
-
     print("\nLet's play chess.\n")
 
-    # This command menu      
-    print(game.get_help_menu())
+    while True:
+        try:
+            choice = input(
+"""
+    Would you like to:
+
+        1)  New game
+        2)  Load a saved game
+        3)  Quit
+
+ > """)
+            choice = int(choice)
+        except ValueError:
+            print("'{}' is not a number!".format(choice))
+
+        else:
+            if choice == 1:
+                # Run chess 
+                game = Chess()
+                run_game(game)
+
+            elif choice == 2:
+                game = Chess(command='load')
+                run_game(game)
+
+            elif choice == 3:
+                game.do_command('exit')
+
+            else:
+                continue
+
+def run_game( game ):
+
+    game.turn_count = 0
+    is_playing = True
 
     try:
+        # The main game loop
         while is_playing:
 
             game.update()
@@ -25,11 +54,12 @@ def main():
             if game.state['CHECKMATE'] == True:
                 is_playing = False
         else:
-            print("\nThanks for playing chess. Goodbye!\n")
-            exit()
+            game.do_command('exit')
             
     except KeyboardInterrupt:
-        print("\nThanks for playing chess. Goodbye!\n")
-        exit()
+        game.do_command('exit')
+    else:
+        print("Game exited.")
 
+# Run the game
 main()
