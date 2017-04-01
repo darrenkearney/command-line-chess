@@ -10,5 +10,186 @@ class Rook(Piece):
         self.available_tiles = [] # array to store coords of available movement tiles
         self.state_list = []
 
+        # Rook special!
+        self.has_castled = False
+        self.can_castle = True
+
         for key, value in kwargs.items():
             setattr( self, key, value )
+
+
+    def get_possible_moves( self, board, player ):
+        # The games board is board[y][x] but every reference to a position is (x,y)
+        # A for loop that checks for possible movement of this piece on the game board.
+        # Returns array of coordinate tuples of legal tiles available for the piece to move into.
+
+        self.available_tiles = [] # array of (x,y) coordinate tuples
+
+        # A rook can move horizontally and vertically. We'll scan 4 directions
+
+        # Scan right
+        x = 1
+        scanner = 1
+        while self.pos[0] + x - 1 <= 7:
+
+            if self.pos[0] == 7:
+                break
+
+            if self.pos[0] + x <= 7:
+
+                if self.is_opponent_at_tile( board[ self.pos[1] ][ self.pos[0]+x ] ) == True:
+                    # If tile contains opponent, add it to available tiles, break
+                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
+                    break
+
+                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == False:
+                    # If tile doesn't contain anything, add it to available tiles
+                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
+
+                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == True:
+                    # Encountered a piece that isn't an opponent piece, so break
+                    break
+
+            x = x + scanner
+
+        # Scan left
+        x = -1
+        scanner = -1
+        while self.pos[0] + x + 1 >= 0:
+
+            if self.pos[0] == 0:
+                break
+
+            if self.pos[0] + x >= 0:
+                # horizontal done
+
+                if self.is_opponent_at_tile( board[ self.pos[1] ][ self.pos[0]+x ] ) == True:
+                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
+                    break
+
+                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == False:
+                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
+
+                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == True:
+                    break
+
+            x = x + scanner
+
+        # Scan Up
+        y = 1
+        scanner = 1
+        while self.pos[1] + y - 1 <= 7:
+
+            if self.pos[1] == 7:
+                break
+
+            if self.pos[1] + y <= 7:
+
+                if self.is_opponent_at_tile( board[ self.pos[1]+y ][ self.pos[0] ] ) == True:
+                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
+                    break
+
+                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == False:
+                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
+
+                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == True:
+                    break
+
+            y = y + scanner
+
+        # Scan down
+        y = -1
+        scanner = -1
+        while self.pos[1] + y + 1 >= 0:
+
+            if self.pos[1] == 0:
+                break
+
+            if self.pos[1] + y >= 0:
+
+                if self.is_opponent_at_tile( board[ self.pos[1]+y ][ self.pos[0] ] ) == True:
+                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
+                    break
+
+                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == False:
+                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
+
+                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == True:
+                    break
+
+            y = y + scanner
+
+        return self.available_tiles
+
+        # A rook can also "castle"
+
+        if self.has_castled == False and self.can_castle == True:
+
+            if self.pos == (0,0):
+
+                # Check tiles in between
+                x = 1
+                if self.is_piece_at_tile( (x,0) ) == True:
+                    x += 1
+                    if self.is_piece_at_tile( (x,0) ) == True:
+                        x += 1
+                        if self.is_piece_at_tile( (x,0) ) == True:
+                            x += 1
+                            if self.is_piece_at_tile( (x,0) ) == True:
+
+                                # Check state of king
+                                if board[0][x].name.lower() == 'king':
+                                    if board[0][x].can_castle == True:
+                                        self.available_tiles.append( (x,0) )
+
+            if self.pos == (7,0):
+
+                # Check tiles in between
+                x = 7
+                if self.is_piece_at_tile( (x,0) ) == True:
+                    x -= 1
+                    if self.is_piece_at_tile( (x,0) ) == True:
+                        x -= 1
+                        if self.is_piece_at_tile( (x,0) ) == True:
+
+                            # Check state of king
+                            if board[0][x].name.lower() == 'king':
+                                if board[0][x].can_castle == True:
+                                    self.available_tiles.append( (x,0) )
+
+            if self.pos == (0,7):
+
+                # Check tiles in between
+                x = 1
+                if self.is_piece_at_tile( (x,7) ) == True:
+                    x += 1
+                    if self.is_piece_at_tile( (x,7) ) == True:
+                        x += 1
+                        if self.is_piece_at_tile( (x,7) ) == True:
+                            x += 1
+                            if self.is_piece_at_tile( (x,7) ) == True:
+
+                                # Check state of king
+                                if board[7][x].name.lower() == 'king':
+                                    if board[7][x].can_castle == True:
+                                        self.available_tiles.append( (x,7) )
+
+                                # Check state of king
+                                if board[7][x].name.lower() == 'king':
+                                    if board[7][x].can_castle == True:
+                                        self.available_tiles.append( (x,7) )
+
+            if self.pos == (7,7):
+
+                # Check tiles in between
+                x = 7
+                if self.is_piece_at_tile( (x,7) ) == True:
+                    x -= 1
+                    if self.is_piece_at_tile( (x,7) ) == True:
+                        x -= 1
+                        if self.is_piece_at_tile( (x,7) ) == True:
+
+                            # Check state of king
+                            if board[7][x].name.lower() == 'king':
+                                if board[7][x].can_castle == True:
+                                    self.available_tiles.append( (x,7) )

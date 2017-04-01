@@ -10,6 +10,7 @@ def main():
     print("\nLet's play chess.\n")
 
     while True:
+        print("~"*42)
         try:
             choice = input(
 """
@@ -17,7 +18,8 @@ def main():
 
         1)  New game
         2)  Load a saved game
-        3)  Quit
+        3)  Options
+        4)  Quit
 
  > """)
             choice = int(choice)
@@ -35,6 +37,24 @@ def main():
                 run_game(game)
 
             elif choice == 3:
+                print("~"*42)
+                print(
+"""
+  ~ Opps. No options available just yet! ~
+
+    Graphics:
+
+        -) Alphabet characters
+        -) Chess font characters
+
+    Settings:
+
+        -) Enter new player name
+
+""")
+                continue
+
+            elif choice == 4:
                 game.do_command('exit')
 
             else:

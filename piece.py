@@ -12,22 +12,26 @@ class Piece(object):
     def __str__( self ):
         return "{}".format(self.char)
 
-    def select( self, board = [[]], player = ""):
-        pass
-
-    def filter_available_tiles( self, available_tiles = [] ):
-        # This filter takes in an array of (x,y) tile coordinates.
-        # This function serves as a way of overriding the available tile output for
-        # specific use cases in which the available tiles must be altered. 
+    # May not use this after all
+    # def filter_available_tiles( self, available_tiles = [] ):
+    #     # This filter takes in an array of (x,y) tile coordinates.
+    #     # This function serves as a way of overriding the available tile output for
+    #     # specific use cases in which the available tiles must be altered. 
         
-        if self.available_tiles != []:
-            if available_tiles == []:
-                available_tiles = self.available.tiles
+    #     if self.available_tiles != []:
+    #         if available_tiles == []:
+    #             available_tiles = self.available.tiles
 
-        return available_tiles
+    #     return available_tiles
+
 
     def get_possible_moves( self, board = [[]], player = "" ):
-        return self.filter_available_tiles([])
+        return self.available_tiles
+
+
+    def get_state_of_piece( self ):
+        return self.state_list
+
 
     def is_opponent_at_tile( self, board_tile ):
         # board_tile given is the contents of the board tile, either a string or an object instance of a piece
@@ -44,14 +48,6 @@ class Piece(object):
         return True
 
 
-    def get_state_of_piece( self ):
-        return self.state_list
-
-
-    def set_state_of_piece( self, state_list ):
-        self.state_list = state_list
-
-
     def is_piece_at_tile( self, board_tile ):
         # Returns True if opponent player has a piece on the tile
         
@@ -63,5 +59,18 @@ class Piece(object):
 
         return False
 
+
     def moved( self ):
         pass
+
+
+    def set_state_of_piece( self, state_list ):
+        self.state_list = state_list
+
+
+    def select( self, board = [[]], player = ""):
+        # Now that this piece is being selected, see what available moves it has
+        self.get_possible_moves( board, player )
+        print("Available Tiles: {}".format(self.available_tiles))
+
+

@@ -854,8 +854,8 @@ Help menu
                         self.settings['black_rook_char'],
                         self.settings['black_knight_char'],
                         self.settings['black_bishop_char'],
-                        self.settings['black_king_char'],
                         self.settings['black_queen_char'],
+                        self.settings['black_king_char'],
                         self.settings['black_bishop_char'],
                         self.settings['black_knight_char'],
                         self.settings['black_rook_char']
@@ -863,8 +863,8 @@ Help menu
                         self.settings['white_rook_char'],
                         self.settings['white_knight_char'],
                         self.settings['white_bishop_char'],
-                        self.settings['white_king_char'],
                         self.settings['white_queen_char'],
+                        self.settings['white_king_char'],
                         self.settings['white_bishop_char'],
                         self.settings['white_knight_char'],
                         self.settings['white_rook_char']

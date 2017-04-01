@@ -58,20 +58,36 @@ class Pawn(Piece):
                     if self.is_opponent_at_tile( board[ self.pos[1]+y_direction ][ tile_x ] ) == True:
                         # Add coordinates to available tiles
                         self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
-        
-        while total_available_moves > 0:
+        moves = []
+        while len(moves) + 1 <= total_available_moves:
             print("PAWN Move y_direction: {}".format(y_direction))
 
             # Cannot move out of bounds of the board
-            if self.pos[1] + (total_available_moves * y_direction) >= 0 and self.pos[1] + (total_available_moves * y_direction) <= 7:
+            if self.pos[1] + ( (len(moves)+1) * y_direction)  >= 0 and self.pos[1] + ((len(moves)+1) * y_direction) <= 7:
 
-                if self.is_piece_at_tile( board[ self.pos[1] + (total_available_moves * y_direction) ][ self.pos[0] ] ) == False:
-                
-                    self.available_tiles.append( ( self.pos[0], self.pos[1] + (total_available_moves * y_direction) ) )
+                if self.is_piece_at_tile( board[ self.pos[1] + ((len(moves)+1) * y_direction) ][ self.pos[0] ] ) == False:
+                    self.available_tiles.append( ( self.pos[0], self.pos[1] + ((len(moves)+1) * y_direction) ) )
+                elif self.is_piece_at_tile( board[ self.pos[1] + ((len(moves)+1) * y_direction) ][ self.pos[0] ] ) == True:
+                    break
 
-            total_available_moves -= 1
+                # # if there is a piece at target tile, break continue the loop
+                # if self.is_piece_at_tile( board[ self.pos[1] + (total_available_moves * y_direction) ][ self.pos[0] ] ) == True:
+                #     total_available_moves -= 1
+                #     continue
 
-        return self.filter_available_tiles(self.available_tiles)
+                # #  if no piece ar target tile, and there is nothing blocking the path, add it.
+                # elif self.is_piece_at_tile( board[ self.pos[1] + (total_available_moves * y_direction) ][ self.pos[0] ] ) == False:
+
+                #     if self.is_first_move and (total_available_moves*y_direction) + self.pos[1] in [self.pos[1] + 2, self.pos[1] - 2 ]:
+                #         if self.is_piece_at_tile( board[ self.pos[1] + y_direction ][ self.pos[0] ] ):
+                #             break
+
+                #     else:
+                #         self.available_tiles.append( ( self.pos[0], self.pos[1] + (total_available_moves * y_direction) ) )
+
+            moves.append(( self.pos[0], self.pos[1] + ((len(moves)+1) * y_direction) ))
+
+        return self.available_tiles
 
     def moved( self ):
         # Triggered when this pawn is moved
@@ -79,11 +95,6 @@ class Pawn(Piece):
             self.is_first_move = False
 
     def select( self, board, player ):
-
-        #available_tiles = self.possible_moves()
+        # Now that this piece is being selected, see what available moves it has
         self.get_possible_moves( board, player )
         print("Available Tiles: {}".format(self.available_tiles))
-
-        # Now that we have taken a move with the tile set this first move to false so we cannot do more
-        #self.is_first_move = False
-
