@@ -12,3 +12,24 @@ class Bishop(Piece):
 
         for key, value in kwargs.items():
             setattr( self, key, value )
+
+
+    def get_possible_moves( self, board, player ):
+
+        self.available_tiles = [] # array of (x,y) coordinate tuples
+
+        # A bishop can move diagonally. We'll scan those directions clockwise
+
+        # Scan up-right
+        self.recursive_tile_scanner( board, [1,1,1,1] )
+
+        # Scan down-right
+        self.recursive_tile_scanner( board, [1,-1,1,-1] )
+
+        # Scan down-left
+        self.recursive_tile_scanner( board, [-1,-1,-1,-1] )
+
+        # Scan up-left
+        self.recursive_tile_scanner( board, [-1,1,-1,1] )
+
+        return self.available_tiles
