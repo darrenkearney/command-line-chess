@@ -19,7 +19,8 @@ def main():
         1)  New game
         2)  Load a saved game
         3)  Options
-        4)  Quit
+
+        0)  Quit
 
  > """)
             choice = int(choice)
@@ -54,7 +55,7 @@ def main():
 """)
                 continue
 
-            elif choice == 4:
+            elif choice == 0:
                 game.do_command('exit')
 
             else:

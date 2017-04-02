@@ -66,13 +66,18 @@ class Piece(object):
 
     def recursive_tile_scanner( self, board, direction ):
         # Unfinished
-        # Scans tiles in direction
+        # Scans tiles in direction based on steps
+        # Limited by number in limit. If given -1 or less, runs without limit
 
         x = direction[0]
         y = direction[1]
         step_x = direction[2]
         step_y = direction[3]
+        limit = direction[4]
 
+        # If limit is 0 exit. 
+        if limit == 0:
+            return
 
         # if no direction then just exit
         if x == 0 and y == 0:
@@ -110,6 +115,9 @@ class Piece(object):
         # Increment/decrement direction by step
         direction[0] = x + step_x
         direction[1] = y + step_y
+        
+        # decrement the limit
+        direction[4] = limit - 1
 
         self.recursive_tile_scanner( board, direction )
 

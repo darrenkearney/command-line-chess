@@ -28,16 +28,16 @@ class Rook(Piece):
         # A rook can move horizontally and vertically. We'll scan 4 directions
 
         # Scan right
-        self.recursive_tile_scanner( board, [1,0,1,0] )
+        self.recursive_tile_scanner( board, [1,0,1,0,-1] )
 
         # Scan left
-        self.recursive_tile_scanner( board, [-1,0,-1,0] )
+        self.recursive_tile_scanner( board, [-1,0,-1,0,-1] )
 
         # Scan up
-        self.recursive_tile_scanner( board, [0,1,0,1] )
+        self.recursive_tile_scanner( board, [0,1,0,1,-1] )
 
         # Scan down
-        self.recursive_tile_scanner( board, [0,-1,0,-1] )
+        self.recursive_tile_scanner( board, [0,-1,0,-1,-1] )
 
         return self.available_tiles
 

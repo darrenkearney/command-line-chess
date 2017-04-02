@@ -21,15 +21,15 @@ class Bishop(Piece):
         # A bishop can move diagonally. We'll scan those directions clockwise
 
         # Scan up-right
-        self.recursive_tile_scanner( board, [1,1,1,1] )
+        self.recursive_tile_scanner( board, [1,1,1,1,-1] )
 
         # Scan down-right
-        self.recursive_tile_scanner( board, [1,-1,1,-1] )
+        self.recursive_tile_scanner( board, [1,-1,1,-1,-1] )
 
         # Scan down-left
-        self.recursive_tile_scanner( board, [-1,-1,-1,-1] )
+        self.recursive_tile_scanner( board, [-1,-1,-1,-1,-1] )
 
         # Scan up-left
-        self.recursive_tile_scanner( board, [-1,1,-1,1] )
+        self.recursive_tile_scanner( board, [-1,1,-1,1,-1] )
 
         return self.available_tiles

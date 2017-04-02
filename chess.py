@@ -84,8 +84,8 @@ class Chess:
         }
 
         # Override defaults with given values
-        for item in kwargs.items():
-            setattr( self, item )
+        for key, value in kwargs.items():
+            setattr( self, key, value )
 
         # If given a command on init, hop to and do it (such as 'load')
         if self.command != "":
