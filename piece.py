@@ -91,38 +91,20 @@ class Piece(object):
         if self.pos[1] + y <= -1:
             return
 
-        # Look for pieces in this direction on x axis
-        if x != 0:
-            if self.pos[0] + x <= 7 and self.pos[0] + x >= 0:
+        # Check tiles for pieces etc:
 
-                if self.is_opponent_at_tile( board[ self.pos[1] ][ self.pos[0]+x ] ) == True:
-                    # If tile contains opponent, add it to available tiles, break
-                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
-                    return
+        if self.is_opponent_at_tile( board[ self.pos[1]+y ][ self.pos[0]+x ] ) == True:
+            # If tile contains opponent, add it to available tiles, break
+            self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
+            return
 
-                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == False:
-                    # If tile doesn't contain anything, add it to available tiles
-                    self.available_tiles.append( (self.pos[0]+x, self.pos[1]) )
+        elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0]+x ] ) == True:
+            # Encountered a piece that isn't an opponent piece, so break
+            return
 
-                elif self.is_piece_at_tile( board[ self.pos[1]][ self.pos[0]+x ] ) == True:
-                    # Encountered a piece that isn't an opponent piece, so break
-                    return
-
-        if y != 0:
-            if self.pos[1] + y <= 7 and self.pos[1] + y >= 0:
-
-                if self.is_opponent_at_tile( board[ self.pos[1]+y ][ self.pos[0] ] ) == True:
-                    # If tile contains opponent, add it to available tiles, break
-                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
-                    return
-
-                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == False:
-                    # If tile doesn't contain anything, add it to available tiles
-                    self.available_tiles.append( (self.pos[0], self.pos[1]+y) )
-
-                elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0] ] ) == True:
-                    # Encountered a piece that isn't an opponent piece, so break
-                    return
+        elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0]+x ] ) == False:
+            # Add tile to available tiles if empty, and continue
+            self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
 
 
         # Increment/decrement direction by step

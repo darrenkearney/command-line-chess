@@ -12,3 +12,40 @@ class Queen(Piece):
 
         for key, value in kwargs.items():
             setattr( self, key, value )
+
+
+    def get_possible_moves( self, board, player ):
+        # The games board is board[y][x] but every reference to a position is (x,y)
+        # A for loop that checks for possible movement of this piece on the game board.
+        # Returns array of coordinate tuples of legal tiles available for the piece to move into.
+
+        self.available_tiles = [] # array of (x,y) coordinate tuples
+
+        # A queen can move horizontally, vertically and diagonally. We'll scan those directions clockwise
+
+        # Scan up
+        self.recursive_tile_scanner( board, [0,1,0,1] )
+
+        # Scan up-right
+        self.recursive_tile_scanner( board, [1,1,1,1] )
+
+        # Scan right
+        self.recursive_tile_scanner( board, [1,0,1,0] )
+
+        # Scan down-right
+        self.recursive_tile_scanner( board, [1,-1,1,-1] )
+
+        # Scan down
+        self.recursive_tile_scanner( board, [0,-1,0,-1] )
+
+        # Scan down-left
+        self.recursive_tile_scanner( board, [-1,-1,-1,-1] )
+
+        # Scan left
+        self.recursive_tile_scanner( board, [-1,0,-1,0] )
+
+        # Scan up-left
+        self.recursive_tile_scanner( board, [-1,1,-1,1] )
+
+
+        return self.available_tiles
