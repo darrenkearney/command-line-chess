@@ -5,6 +5,7 @@ class Piece(object):
         self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
         self.state_list = []
+        self.debug_mode = False
 
         for key, value in kwargs.items():
             setattr( self, key, value )
@@ -23,6 +24,18 @@ class Piece(object):
     #             available_tiles = self.available.tiles
 
     #     return available_tiles
+
+
+    def debug_log( self, message ):
+
+        if self.is_debug_mode != True:
+            return
+
+        # Add it to a list of debug messages
+        self.debug_log.append(message)
+
+        # Out the message as it happens
+        print(message)
 
 
     def get_possible_moves( self, board = [[]], player = "" ):

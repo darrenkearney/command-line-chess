@@ -41,7 +41,7 @@ class Pawn(Piece):
             #print("get possible moves player lowercase {}".format(player))
 
         else:
-            print("@@@@ Oddly player is neither uppercase or lowercase, its {}".format(player))
+            self.debug_log("@@@@ Oddly player is neither uppercase or lowercase, its {}".format(player))
 
         #
         # Check for opponent pieces that would need to be taken

@@ -114,6 +114,18 @@ class Chess:
                 break
 
 
+    def debug_log( self, message ):
+
+        if self.is_debug_mode != True:
+            return
+
+        # Add it to a list of debug messages
+        self.debug_log.append(message)
+
+        # Out the message as it happens
+        print(message)
+
+
     def display( self ):
         # This get's called every update.
         # It returns the output that will be displayed to the user
@@ -437,6 +449,10 @@ class Chess:
         return "Command List: {}".format(self.command_list)
 
 
+    def get_debug_log_of_piece( self, piece ):
+        return piece.debug_log
+
+
     def get_help_menu( self ):
 
         return """
@@ -520,16 +536,16 @@ Help menu
 
                 p = self.board[tile[1]][tile[0]]
 
-                print("@@@@ piece at tile. piece.name = {}, p.side = {}".format(p.name.lower(), p.side))
+                self.debug_log("@@@@ piece at tile. piece.name = {}, p.side = {}".format(p.name.lower(), p.side))
 
                 if p.name.lower() == 'king' and p.side == self.get_opposite_player(player):
                         # If king is present set opponent's check to True
 
-                        print("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
+                        self.debug_log("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
 
                         return True
      
-        print("@@@@ Piece {} not causing Check!".format(piece))
+        self.debug_log("@@@@ Piece {} not causing Check!".format(piece))
 
         return False
 
@@ -819,7 +835,7 @@ Help menu
 
                 for x in range( len(self.board[y]) ):
 
-                    print("@@@@ game_board_split[y][x] = {}".format(game_board_split[y][x]))
+                    self.debug_log("@@@@ game_board_split[y][x] = {}".format(game_board_split[y][x]))
 
                     if game_board_split[y][x] in board_setup_validator[0]:
                         self.board[y][x] = self.new_piece( char = game_board_split[y][x], pos = (x, y), side = "lowercase" )
@@ -946,8 +962,8 @@ Help menu
                         self.player_info[player]['check_pieces'].pop(i)
 
         # Debug log
-        print("@@@@ {} check pieces {}".format(self.current_player, self.player_info[self.current_player]['check_pieces']))
-        print("@@@@ {} check pieces {}".format(self.get_opposite_player(), self.player_info[self.get_opposite_player()]['check_pieces']))
+        self.debug_log("@@@@ {} check pieces {}".format(self.current_player, self.player_info[self.current_player]['check_pieces']))
+        self.debug_log("@@@@ {} check pieces {}".format(self.get_opposite_player(), self.player_info[self.get_opposite_player()]['check_pieces']))
 
         ##
         ##  Do stuff for current player with current check state
