@@ -4,13 +4,16 @@ from piece import Piece
 class Rook(Piece):
 
     def __init__( self, **kwargs ):
-        
-        self.name = "Rook"
+
+        # Normal setup
         self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
+        self.is_debug_mode = False
+        self.debug_logs = []
         self.state_list = []
 
         # Rook special!
+        self.name = "Rook"
         self.has_castled = False
         self.can_castle = True
 

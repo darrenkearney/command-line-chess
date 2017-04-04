@@ -2,10 +2,12 @@ class Piece(object):
 
     def __init__( self, **kwargs ):
         
-        self.char = kwargs['char'] # this is used as the representation of the piece
+        # Normal setup
         self.available_tiles = [] # array to store coords of available movement tiles
+        self.char = kwargs['char'] # this is used as the representation of the piece
+        self.debug_logs = []
+        self.is_debug_mode = False
         self.state_list = []
-        self.debug_mode = False
 
         for key, value in kwargs.items():
             setattr( self, key, value )
@@ -32,7 +34,7 @@ class Piece(object):
             return
 
         # Add it to a list of debug messages
-        self.debug_log.append(message)
+        self.debug_logs.append(message)
 
         # Out the message as it happens
         print(message)
@@ -50,7 +52,7 @@ class Piece(object):
         # board_tile given is the contents of the board tile, either a string or an object instance of a piece
         # Returns True if opponent player has a piece on the tile
         
-        print("DEBUG: IS_OPPONENT_AT_TILE:{}".format(board_tile))
+        self.debug_log("DEBUG: IS_OPPONENT_AT_TILE:{}".format(board_tile))
 
         if type(board_tile) == str:
             return False

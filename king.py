@@ -5,10 +5,14 @@ class King(Piece):
 
     def __init__( self, **kwargs ):
         
-        self.name = "King"
         self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
+        self.is_debug_mode = False
+        self.debug_logs = []
         self.state_list = []
+
+        # King special
+        self.name = "King"
 
         for key, value in kwargs.items():
             setattr( self, key, value )

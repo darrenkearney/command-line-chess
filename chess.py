@@ -17,42 +17,17 @@ class Chess:
     # Initialize
     def __init__( self, **kwargs ):
 
-        # Default Settings
-        self.settings = {
-            'players': 2,
-            'game_mode': "normal",
-            'max_x': 8,
-            'max_y': 8,
-            'cursor_left_char': '[',
-            'cursor_right_char': ']',
-            'cursor_move_left_char': '{',
-            'cursor_move_right_char': '}',
-            'tile_dark_bg_char': ':',
-            'move_marker': '⦁',
-            'black_bishop_char':    'b',    # '♝',
-            'black_king_char':      'k',    # '♚',
-            'black_knight_char':    'n',    # '♞',
-            'black_pawn_char':      'p',    # '♟',
-            'black_queen_char':     'q',    # '♛',
-            'black_rook_char':      'r',    # '♜',
-            'white_bishop_char':    'B',    # '♗',
-            'white_king_char':      'K',    # '♔',
-            'white_knight_char':    'N',    # '♘',
-            'white_pawn_char':      'P',    # '♙',
-            'white_queen_char':     'Q',    # '♕',
-            'white_rook_char':      'R',    # '♖',
-            'save_file_extension': '.savegame'
-        }
+        # Initialize Default Settings & states
 
         self.command = ""
-
-        self.is_help_mode = False
-
-        self.is_piece_selected = False
-
-        self.is_turn_ended = False
-
         self.current_player = 'uppercase'
+        self.cursor_pos = [0,0] # (x,y)
+        self.debug_logs = []
+
+        self.is_debug_mode = False
+        self.is_help_mode = False
+        self.is_piece_selected = False
+        self.is_turn_ended = False
 
         self.player_info = {
             self.current_player : {
@@ -72,16 +47,44 @@ class Chess:
                 'pieces': []
             }
         }
-
-        self.update_count = 0
-
-        self.cursor_pos = [0,0] # (x,y)
         
         self.selected_tile_pos = []
+        
+        self.settings = {
+            'players': 2,
+            'game_mode': "normal",
+            'graphics': 'colourful',
+            'max_x': 8,
+            'max_y': 8,
+            'cursor_left_char': '>',
+            'cursor_right_char': '<',
+            'cursor_move_left_char':'{',
+            'cursor_move_right_char':'}',
+            'tile_light_bg_char':   ':',
+            'tile_light_bg_colour': '\u001b[48;5;240m',
+            'tile_edge_char':       '|',
+            'tile_edge_colour':     '\u001b[38;5;236m', # '\u001b[48;5;232m',
+            'move_marker':          '⦁',
+            'black_bishop_char':    'b',    # '♝',
+            'black_king_char':      'k',    # '♚',
+            'black_knight_char':    'n',    # '♞',
+            'black_pawn_char':      'p',    # '♟',
+            'black_queen_char':     'q',    # '♛',
+            'black_rook_char':      'r',    # '♜',
+            'white_bishop_char':    'B',    # '♗',
+            'white_king_char':      'K',    # '♔',
+            'white_knight_char':    'N',    # '♘',
+            'white_pawn_char':      'P',    # '♙',
+            'white_queen_char':     'Q',    # '♕',
+            'white_rook_char':      'R',    # '♖',
+            'save_file_extension': '.savegame'
+        }
 
         self.state = {
             'CHECKMATE': False
         }
+
+        self.update_count = 0
 
         # Override defaults with given values
         for key, value in kwargs.items():
@@ -120,7 +123,7 @@ class Chess:
             return
 
         # Add it to a list of debug messages
-        self.debug_log.append(message)
+        self.debug_logs.append(message)
 
         # Out the message as it happens
         print(message)
@@ -143,6 +146,16 @@ class Chess:
 
         alt = 0 # Used to keep track of alternating tiles to paint the background
 
+        if self.settings['graphics'] == 'colourful':
+            tile_light_bg = '{} '.format(self.settings['tile_light_bg_colour'])
+            tile_edge = '{}{}{}'.format(self.settings['tile_edge_colour'],self.settings['tile_edge_char'], '\u001b[0m')
+            move_marker = '{}'.format(self.settings['move_marker'])
+        else:
+            tile_light_bg = self.settings['tile_light_bg_char']
+            tile_edge = '{}'.format(self.settings['tile_edge_char'])
+            move_marker = self.settings['move_marker']
+
+
         # Let's run a loop over all the tiles of all the rows on the board
         # Filling in the characters as appropriate to their state
         for y in range( len(self.board) ):
@@ -150,6 +163,13 @@ class Chess:
             # check to see of the first tile on a row is selected, if so paint the tile edge/border appropriately
             
             line_x = "\t" # Reset line_x for constructing new line
+
+            # Actually going to set the colours for each row
+            if self.settings['graphics'] == 'colourful':
+                # If set to colour, we'll programmatically add a little gradient
+                colour_gradient = '{}'.format( '\u001b[48;5;'+str(235+int((y*2+1)/2))+'m' )
+                tile_light_bg = '{} '.format( colour_gradient )
+                tile_edge = '{}{}{}'.format( colour_gradient, self.settings['tile_edge_char'], '\u001b[0m')
 
             if self.is_help_mode == True:
                 line_x = "      {} ".format( 8 - y )
@@ -161,9 +181,9 @@ class Chess:
                     if self.selected_tile_pos == [0, y]:
                         line_x += "{}".format( self.settings['cursor_move_left_char'] )
                     else:
-                        line_x += "|"
+                        line_x += "{}".format(tile_edge)
                 else:
-                    line_x += "|"
+                    line_x += "{}".format(tile_edge)
 
             elif y == self.cursor_pos[1]:
 
@@ -180,7 +200,7 @@ class Chess:
                     if [0, y] == self.selected_tile_pos and self.is_piece_selected == True:
                         line_x += "{}".format( self.settings['cursor_move_left_char'] )
                     else:
-                        line_x += "|"
+                        line_x += "{}".format(tile_edge)
 
             for x in range( len( self.board[y] ) ):
                 # Paint "Contents" of tile
@@ -193,13 +213,24 @@ class Chess:
                     if self.is_piece_selected == True and (x,y) in self.selected_piece.available_tiles:
                         
                         if alt % 2 == 0:
-                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['move_marker'] )
+                            
+                            if self.settings['graphics'] == 'colourful':
+                                line_x += '{}'.format(colour_gradient)
+
+                                line_x += "{}{}".format( move_marker, ' ' )
+                                # Reset the ANSI colour codes
+                                line_x += '\u001b[0m'
+                            else:
+                                line_x += "{}{}".format( move_marker, tile_light_bg )
                         else:
-                            line_x += " {}".format( self.settings['move_marker'] )
+                            line_x += "{} ".format( move_marker )
                     else:
 
                         if alt % 2 == 0:
-                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.settings['tile_dark_bg_char'] )
+                            line_x += "{}{}".format( tile_light_bg, tile_light_bg )
+                            # Reset the ANSI colour codes
+                            if self.settings['graphics'] == 'colourful':
+                                line_x += '\u001b[0m'
                         else:
                             line_x += "  " # Empty blank tile
 
@@ -209,7 +240,10 @@ class Chess:
                         if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
                             line_x += "{}{}".format( "x", self.board[y][x] )
                         else:
-                            line_x += "{}{}".format( self.settings['tile_dark_bg_char'], self.board[y][x] )
+                            line_x += "{}{}".format( tile_light_bg, self.board[y][x] )
+                            # Reset the ANSI colour codes
+                            if self.settings['graphics'] == 'colourful':
+                                line_x += '\u001b[0m'
 
                     else:
                         if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
@@ -241,7 +275,7 @@ class Chess:
 
                         # Otherwise paint the normal board edge
                         else:
-                            line_x += "|"
+                            line_x += "{}".format(tile_edge)
 
                     if [x, y] == self.cursor_pos:
                         # In Move mode,
@@ -263,7 +297,7 @@ class Chess:
                         line_x += self.settings['cursor_left_char'] 
 
                     else:
-                        line_x += "|"
+                        line_x += "{}".format(tile_edge)
 
                 alt += 1 # Bg tiles
 
@@ -285,7 +319,7 @@ class Chess:
                 output_string += "{}\n".format( line_x )        
 
         # Print board
-        print(output_string)
+        print(u"{}".format(output_string))
 
         if self.is_help_mode == True:
             print("\t\tLowercase")
@@ -446,7 +480,7 @@ class Chess:
 
     def get_debug_log( self ):
         # Add more stuff there
-        return "Command List: {}".format(self.command_list)
+        return "Command List: {},\nLogs: {}".format(self.command_list, self.debug_logs)
 
 
     def get_debug_log_of_piece( self, piece ):
@@ -558,7 +592,7 @@ Help menu
             return False
 
         if self.board[coords[1]][coords[0]].side in ["uppercase", "lowercase"]:
-            print("+-+-+-+-+-+-+    Something at tile {} and it's type is {}".format(coords, type(self.board[coords[1]][coords[0]]) ))
+            self.debug_log("+-+-+-+-+-+-+    Something at tile {} and it's type is {}".format(coords, type(self.board[coords[1]][coords[0]]) ))
             return True
 
         return False
@@ -903,7 +937,7 @@ Help menu
                     self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
                     self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
 
-                print("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
+                self.debug_log("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
 
             return "New board set up."
 

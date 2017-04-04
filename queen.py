@@ -5,10 +5,14 @@ class Queen(Piece):
 
     def __init__( self, **kwargs ):
         
-        self.name = "Queen"
         self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
+        self.is_debug_mode = False
+        self.debug_logs = []
         self.state_list = []
+
+        # Queen special!
+        self.name = "Queen"
 
         for key, value in kwargs.items():
             setattr( self, key, value )

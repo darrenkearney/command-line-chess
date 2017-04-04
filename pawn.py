@@ -5,10 +5,15 @@ class Pawn(Piece):
 
     def __init__( self, **kwargs ):
 
-        self.name = "Pawn"
+        self.char = kwargs['char'] # this is used as the representation of the piece
         self.available_tiles = [] # array to store coords of available movement tiles
-        self.is_first_move = True
+        self.is_debug_mode = False
+        self.debug_logs = []
         self.state_list = []
+
+        # Pawn special
+        self.name = "Pawn"
+        self.is_first_move = True
 
         #self.pos = kwargs['pos'] # (x,y)
         for key, value in kwargs.items():
@@ -60,7 +65,7 @@ class Pawn(Piece):
                         self.available_tiles.append( ( tile_x, self.pos[1]+y_direction ) )
         moves = []
         while len(moves) + 1 <= total_available_moves:
-            print("PAWN Move y_direction: {}".format(y_direction))
+            self.debug_log("PAWN Move y_direction: {}".format(y_direction))
 
             # Cannot move out of bounds of the board
             if self.pos[1] + ( (len(moves)+1) * y_direction)  >= 0 and self.pos[1] + ((len(moves)+1) * y_direction) <= 7:
