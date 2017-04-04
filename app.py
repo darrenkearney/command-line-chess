@@ -4,6 +4,7 @@
 # https://github.com/darrenkearney
 
 from chess import Chess
+import random
 
 # # To do.
 # 1. Finish check state rules
@@ -48,14 +49,37 @@ def main():
 
     motd = "An unintuitive chess game."
 
-    print(u"""
+    # Fancy ascii art
+    title_art = """
+    8\"\"\"\"8                                            8                   
+    8    \" eeeee eeeeeee eeeeeee eeeee eeeee eeeee    8     e  eeeee eeee 
+    8e     8  88 8  8  8 8  8  8 8   8 8   8 8   8    8e    8  8   8 8    
+    88     8   8 8e 8  8 8e 8  8 8eee8 8e  8 8e  8    88    8e 8e  8 8eee 
+    88   e 8   8 88 8  8 88 8  8 88  8 88  8 88  8    88    88 88  8 88   
+    88eee8 8eee8 88 8  8 88 8  8 88  8 88  8 88ee8    88eee 88 88  8 88ee 
+                                                                          
+                         8\"\"\"\"8                                           
+                         8    \" e   e eeee eeeee eeeee                    
+                         8e     8   8 8    8   \" 8   \"                    
+                         88     8eee8 8eee 8eeee 8eeee                    
+                         88   e 88  8 88      88    88                    
+                         88eee8 88  8 88ee 8ee88 8ee88                    
+                                                                      
+"""
 
-   ___  __   _  _  _  _   __   __ _  ____    __    __  __ _  ____     ___  _  _  ____  ____   ____ 
-  / __)/  \ ( \/ )( \/ ) / _\ (  ( \(    \  (  )  (  )(  ( \(  __)   / __)/ )( \(  __)/ ___) / ___)
--( (__(  O )/ \/ \/ \/ \/    \/    / ) D (--/ (_/\ )( /    / ) _)---( (__ ) __ ( ) _) \___ \ \___ \-
-  \___)\__/ \_)(_/\_)(_/\_/\_/\_)__)(____/  \____/(__)\_)__)(____)   \___)\_)(_/(____)(____/ (____/
+    lines = title_art.split('\n')
+    title_string = ""
 
-""")
+     # Nice gradient start points
+    gradients = [28,40,178,190,220]
+    # Pick a random colour
+    r_gradient = random.choice(gradients)
+
+    # Let's add a splash of colour using our gradient start point
+    for line in lines:
+        title_string += "{}{}{}{}{}".format('\u001b[38;5;', str(r_gradient + int(lines.index(line) * 0.9 )), 'm', line,'\u001b[0m\n')
+
+    print(u"\n{}\n".format(title_string))
     print("\n\t{}\n\n".format(motd))
 
     while True:
