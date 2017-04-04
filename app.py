@@ -7,14 +7,24 @@ from chess import Chess
 
 def main():
 
-    print("\nLet's play chess.\n")
+    motd = "An unintuitive chess game."
+
+    print("""
+
+   ___  __   _  _  _  _   __   __ _  ____    __    __  __ _  ____     ___  _  _  ____  ____   ____ 
+  / __)/  \ ( \/ )( \/ ) / _\ (  ( \(    \  (  )  (  )(  ( \(  __)   / __)/ )( \(  __)/ ___) / ___)
+-( (__(  O )/ \/ \/ \/ \/    \/    / ) D (--/ (_/\ )( /    / ) _)---( (__ ) __ ( ) _) \___ \ \___ \-
+  \___)\__/ \_)(_/\_)(_/\_/\_/\_)__)(____/  \____/(__)\_)__)(____)   \___)\_)(_/(____)(____/ (____/
+
+""")
+    print("\n\t{}\n\n".format(motd))
 
     while True:
         print("~"*42)
         try:
             choice = input(
 """
-    Would you like to:
+    Start menu:
 
         1)  New game
         2)  Load a saved game
