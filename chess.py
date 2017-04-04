@@ -53,7 +53,7 @@ class Chess:
         self.settings = {
             'players': 2,
             'game_mode': "normal",
-            'graphics': 'colourful',
+            'graphics': 'colourful', # colourful or normal
             'max_x': 8,
             'max_y': 8,
             'cursor_left_char': '>',
