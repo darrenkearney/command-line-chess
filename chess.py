@@ -948,17 +948,20 @@ Help menu
         # Display chess board
         self.display()
 
-        # Get input
-        self.command = input(" > ")
-        self.add_command( self.command )
+        ###
+        ### Commented out as we will pass input into the chess class via the app.py
+        ###
+        # # Get input
+        # self.command = input(" > ")
+        # self.add_command( self.command )
 
-        # Do command (such as move)
-        # If the command list is not empty, pop a command and do it.
-        if self.command_list != []:
-            self.do_command(self.command_list.pop())
+        # # Do command (such as move)
+        # # If the command list is not empty, pop a command and do it.
+        # if self.command_list != []:
+        #     self.do_command(self.command_list.pop())
 
-        # update the current state of board
-        self.update_state_of_board()
+        # # update the current state of board
+        # self.update_state_of_board()
 
         # Increment update count (our version of a time delta)
         self.update_count += 1
