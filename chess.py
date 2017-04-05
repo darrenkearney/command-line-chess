@@ -20,8 +20,8 @@ class Chess:
         # Initialize Default Settings & states
 
         self.command = ""
-        self.current_player = 'uppercase'
-        self.cursor_pos = [0,0] # (x,y)
+        self.current_player = 'uppercase' # lowercase start needs to be fixed
+        self.cursor_pos = [0,0] # [4,6] # (x,y)
         self.debug_logs = []
 
         self.is_debug_mode = False
