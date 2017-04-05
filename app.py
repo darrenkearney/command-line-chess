@@ -67,15 +67,51 @@ class App():
         elif view == 'SETTINGS':
             return self.settings()
 
-        # elif view == 'GRAPHICS_SETTINGS':
-        #     return self.graphics_settings()
+        elif view == 'GRAPHICS_SETTINGS':
+            return self.graphics_settings()
 
         # elif view == 'GAME_SETTINGS':
         #     return self.chess_settings()
 
         else:
             print("View not found.")
-            return self.maing_menu()
+            return self.main_menu()
+
+
+    def graphics_settings( self ):
+
+        options = {'1': '  ', '2': '  '}
+        if self.chess.settings['graphics'] == 'normal':
+            options['1'] = ' *'
+        elif self.chess.settings['graphics'] == 'colourful':
+            options['2'] = ' *' 
+
+        choice_menu = """{}
+
+    Graphics Settings:
+
+    {}  1)  Plain
+    {}  2)  Colourful
+
+        0)  Back
+
+
+    (A * symbol show's current selection)
+
+""".format("~"*42, options['1'], options['2'])
+
+        choice = self.input_int( choice_menu )
+
+        if choice == 1:
+            self.chess.settings['graphics'] = 'normal'
+            self.get_view('GRAPHICS_SETTINGS')
+
+        if choice == 2:
+            self.chess.settings['graphics'] = 'colourful'
+            self.get_view('GRAPHICS_SETTINGS')
+
+        elif choice == 0:
+            self.get_view("SETTINGS")
 
 
     def main_menu( self ):
@@ -115,7 +151,6 @@ class App():
         print(u"\n{}\n".format(title_string))
         print("\n    {}\n    https://github.com/darrenkearney/command-line-chess\n".format(motd))
 
-
         self.available_options = [1,2,3,9,0]
 
         if self.is_game_running == False:
@@ -124,7 +159,6 @@ class App():
         else:
             resume_msg = ''
             
-
         choice_menu = """{}
 
     Start menu:
@@ -137,8 +171,6 @@ class App():
         0)  Quit
 
 """.format("~"*42, resume_msg )
-
-
 
         choice = self.input_int( choice_menu )
 
