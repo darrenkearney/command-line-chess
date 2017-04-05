@@ -10,10 +10,8 @@ import random
 # 1. Finish check state rules
 #   1.1 
 #
-#
 # 2. Add algebraic notation translator to allow player to input their desired move
 #   2.1 Give feedback on bad/illegal/error moves 
-#
 #
 # 3. Add a (verbose) input mode switcher to turn off cursor display.
 #
@@ -27,7 +25,7 @@ import random
 #   6.1 Add authorship info to all files
 #   6.2 Add a license, include it within all files
 #   6.3 
-#
+
 class App():
 
     def __init__( self ):
@@ -58,16 +56,62 @@ class App():
             else:
                 return choice
 
+    def multi_choice_input( self, message_obj ):
+        # Takes a message object
+        # message_obj = { 
+        #    'message' : 'Description of current menu',
+        #    'items': [ "Option zero", "Option one" ]
+        # }
+
+        message = '    {}\n\n'.format( message_obj['message'] )
+
+        for item in message_obj['items']:
+        
+            message += '        {})  {}\n'.format( message_obj['items'].index(item) + 1, item )
+
+        if self.view != 'MAIN_MENU':
+            str_ = "Back"
+        elif self.view == 'MAIN_MENU':
+            str_ = "Quit"
+
+        message += '\n        {})  {}\n'.format( 0, str_ )
+
+        while True:
+
+            try:
+                choice = input("{}\n > ".format(message))
+                choice = int(choice)
+
+            except ValueError:
+                print("{} is not a number.".format(choice))
+                continue
+
+            except KeyboardInterrupt:
+                if self.view == 'MAIN_MENU':
+                    print("\nBye!\n")
+                    exit()
+                print("Exiting menu.")
+                return None
+
+            else:
+                return choice
+
 
     def get_view( self, view ):
         
         if view == 'MAIN_MENU':
+
+            self.view = view
             return self.main_menu()
 
         elif view == 'SETTINGS':
+
+            self.view = view
             return self.settings()
 
         elif view == 'GRAPHICS_SETTINGS':
+
+            self.view = view
             return self.graphics_settings()
 
         # elif view == 'GAME_SETTINGS':
@@ -75,7 +119,7 @@ class App():
 
         else:
             print("View not found.")
-            return self.main_menu()
+            return self.get_view('MAIN_MENU')
 
 
     def graphics_settings( self ):
@@ -151,28 +195,38 @@ class App():
         print(u"\n{}\n".format(title_string))
         print("\n    {}\n    https://github.com/darrenkearney/command-line-chess\n".format(motd))
 
-        self.available_options = [1,2,3,9,0]
+
+        self.available_options = [1,2,3,4,0]
 
         if self.is_game_running == False:
             self.available_options.remove(2)
             resume_msg = "(Not available)"
+
+            items = [
+                'Start a new game',
+                '(Resume not available)',
+                'Load a saved game',
+                'Options'
+            ]
+
         else:
             resume_msg = ''
+
+            items = [
+                'Start a new game',
+                'Resume current game',
+                'Load a saved game',
+                'Options'
+            ]
             
-        choice_menu = """{}
+        message_obj = {
 
-    Start menu:
+            'message' : 'Start menu:',
+            'items' : items
 
-        1)  Start a new game
-        2)  Resume current game {}
-        3)  Load a saved game
+        }
 
-        9)  Options
-        0)  Quit
-
-""".format("~"*42, resume_msg )
-
-        choice = self.input_int( choice_menu )
+        choice = self.multi_choice_input( message_obj )
 
         if choice == 1:
             # Initialize new game of chess 
@@ -186,21 +240,26 @@ class App():
             self.run_chess(self.chess)
 
         elif choice == 2:
-            self.run_chess(self.chess)
+            
+            if self.is_game_running == False:
+                print("Cannot resume - no current game.")
+                self.get_view("MAIN_MENU")
+            else:
+                self.run_chess(self.chess)
 
         elif choice == 3:
             self.chess.do_command('load')
             self.run_chess(self.chess)
 
-        elif choice == 9:
+        elif choice == 4:
             self.get_view("SETTINGS")
 
         elif choice == 0:
             print("\n Thanks for playing. Bye! \n")
             exit()
 
-        elif choice not in available_options:
-            choice = self.input_int( choice_menu )
+        elif choice not in self.available_options:
+            choice = self.multi_choice_input( message_obj )
 
 
     def run_chess( self, chess ):
@@ -277,7 +336,6 @@ class App():
 
         elif choice not in [0,1,2]:
             choice = self.input_int( choice_menu )
-
 
 # Run the game
 App()
