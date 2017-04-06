@@ -337,11 +337,14 @@ class Chess:
             print("Available Tiles: {}".format(self.selected_piece.available_tiles))
 
             # Display who is in a Check state
-            for player in [self.current_player, self.get_opposite_player()]:
+        for player in [self.current_player, self.get_opposite_player()]:
                 
-                print("{} is_in_check: {}".format( player, self.player_info[player]['is_in_check'] ))
-                
-                print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
+            if self.player_info[player]['is_in_check'] == True:
+                str_ = 'is'
+            else:
+                str_ = 'is not'
+            print("{} {} in check.".format( player, str_ ))
+            print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
 
         print("Current player: {}".format(self.current_player))
 
@@ -366,7 +369,12 @@ class Chess:
             print("{}".format(self.get_help_menu()))
 
         if command.lower() == "debug":
-            print("{}".format(self.get_debug_log()))
+            if self.is_debug_mode == True:
+                self.is_debug_mode = False
+            elif self.is_debug_mode == False:
+                self.is_debug_mode = True
+
+            #print("{}".format(self.get_debug_log()))
 
         #
         # Save
@@ -492,21 +500,40 @@ class Chess:
         return """
 Help menu
 
+    Instructions:
+
+        In order to play command line chess, you need to use the commands below.
+        It takes one command at a time. To enter a command type the letter or
+        word and press the Enter Key. 
+
     Commands:
 
-        help            Help (display this menu) = h / ? / help
-        save            Save current game to file (in saves/ directory)
-        load            Load game from file
+        help / h / ?    Help (display this menu) = h / ? / help
 
-    Cursor Commands:
+        menu            Return to Main menu.
+        
+        save            Save current game to file (in saves/ directory).
+        
+        load            Load game from file.
+        
+        debug           Turn on/off debug mode. (Handy for Darren!)
 
-        w               up
-        s               down
-        a               left
-        d               right
+        exit            Exit the game immediately (without saving)
 
-        x               (no selection)   Select Piece at cursor
-        x               (piece selected) Move the selected piece to cursor
+    Cursor Movement:
+
+        w               Up
+        s               Down
+        a               Left
+        d               Right
+
+    To Select A Piece:
+
+        x               Press x over the piece to select it, or pick it up. 
+                        Once selected, move the cursor to where you want to put
+                        the piece, then enter 'x' again to place it. Pieces
+                        should only successfully place on legal tiles. Let me
+                        know if there are any wierd bugs!
 """
 
 

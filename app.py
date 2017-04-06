@@ -78,12 +78,14 @@ class App():
 
         while True:
 
+            print('{}\n'.format('~'*42))
+
             try:
                 choice = input("{}\n > ".format(message))
                 choice = int(choice)
 
             except ValueError:
-                print("{} is not a number.".format(choice))
+                print("\n Oops: '{}' is not a number.\n".format(choice))
                 continue
 
             except KeyboardInterrupt:
@@ -94,6 +96,11 @@ class App():
                 return None
 
             else:
+                
+                if choice not in self.available_options:
+                    print("\n Oops: '{}' is not an available item!\n".format(choice))
+                    choice = self.multi_choice_input( message_obj )
+
                 return choice
 
 
@@ -222,7 +229,8 @@ class App():
         message_obj = {
 
             'message' : 'Start menu:',
-            'items' : items
+            'items' : items,
+            'available_options' : self.available_options
 
         }
 
@@ -257,10 +265,6 @@ class App():
         elif choice == 0:
             print("\n Thanks for playing. Bye! \n")
             exit()
-
-        elif choice not in self.available_options:
-            choice = self.multi_choice_input( message_obj )
-
 
     def run_chess( self, chess ):
 
