@@ -337,11 +337,14 @@ class Chess:
             print("Available Tiles: {}".format(self.selected_piece.available_tiles))
 
             # Display who is in a Check state
-            for player in [self.current_player, self.get_opposite_player()]:
+        for player in [self.current_player, self.get_opposite_player()]:
                 
-                print("{} is_in_check: {}".format( player, self.player_info[player]['is_in_check'] ))
-                
-                print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
+            if self.player_info[player]['is_in_check'] == True:
+                str_ = 'is'
+            else:
+                str_ = 'is not'
+            print("{} {} in check.".format( player, str_ ))
+            print("{} has taken pieces: {}".format(player, self.player_info[player]['pieces_taken']))
 
         print("Current player: {}".format(self.current_player))
 
@@ -366,7 +369,12 @@ class Chess:
             print("{}".format(self.get_help_menu()))
 
         if command.lower() == "debug":
-            print("{}".format(self.get_debug_log()))
+            if self.is_debug_mode == True:
+                self.is_debug_mode = False
+            elif self.is_debug_mode == False:
+                self.is_debug_mode = True
+
+            #print("{}".format(self.get_debug_log()))
 
         #
         # Save
