@@ -500,21 +500,40 @@ class Chess:
         return """
 Help menu
 
+    Instructions:
+
+        In order to play command line chess, you need to use the commands below.
+        It takes one command at a time. To enter a command type the letter or
+        word and press the Enter Key. 
+
     Commands:
 
-        help            Help (display this menu) = h / ? / help
-        save            Save current game to file (in saves/ directory)
-        load            Load game from file
+        help / h / ?    Help (display this menu) = h / ? / help
 
-    Cursor Commands:
+        menu            Return to Main menu.
+        
+        save            Save current game to file (in saves/ directory).
+        
+        load            Load game from file.
+        
+        debug           Turn on/off debug mode. (Handy for Darren!)
 
-        w               up
-        s               down
-        a               left
-        d               right
+        exit            Exit the game immediately (without saving)
 
-        x               (no selection)   Select Piece at cursor
-        x               (piece selected) Move the selected piece to cursor
+    Cursor Movement:
+
+        w               Up
+        s               Down
+        a               Left
+        d               Right
+
+    To Select A Piece:
+
+        x               Press x over the piece to select it, or pick it up. 
+                        Once selected, move the cursor to where you want to put
+                        the piece, then enter 'x' again to place it. Pieces
+                        should only successfully place on legal tiles. Let me
+                        know if there are any wierd bugs!
 """
 
 
