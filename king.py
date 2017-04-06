@@ -27,27 +27,27 @@ class King(Piece):
         move_limit = 1
 
         # Scan up
-        self.recursive_tile_scanner( board=board, direction=[0,1,0,1, move_limit ] )
+        self.recursive_tile_scanner( board, [0,1,0,1, move_limit ] )
 
         # Scan up-right
-        self.recursive_tile_scanner( board=board, direction=[1,1,1,1, move_limit ] )
+        self.recursive_tile_scanner( board, [1,1,1,1, move_limit ] )
 
         # Scan right
-        self.recursive_tile_scanner( board=board, direction=[1,0,1,0, move_limit ] )
+        self.recursive_tile_scanner( board, [1,0,1,0, move_limit ] )
 
         # Scan down-right
-        self.recursive_tile_scanner( board=board, direction=[1,-1,1,-1, move_limit ] )
+        self.recursive_tile_scanner( board, [1,-1,1,-1, move_limit ] )
 
         # Scan down
-        self.recursive_tile_scanner( board=board, direction=[0,-1,0,-1, move_limit ] )
+        self.recursive_tile_scanner( board, [0,-1,0,-1, move_limit ] )
 
         # Scan down-left
-        self.recursive_tile_scanner( board=board, direction=[-1,-1,-1,-1, move_limit ] )
+        self.recursive_tile_scanner( board, [-1,-1,-1,-1, move_limit ] )
 
         # Scan left
-        self.recursive_tile_scanner( board=board, direction=[-1,0,-1,0, move_limit ] )
+        self.recursive_tile_scanner( board, [-1,0,-1,0, move_limit ] )
 
         # Scan up-left
-        self.recursive_tile_scanner( board=board, direction=[-1,1,-1,1, move_limit ] )
+        self.recursive_tile_scanner( board, [-1,1,-1,1, move_limit ] )
 
         return self.available_tiles

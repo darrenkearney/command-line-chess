@@ -18,26 +18,22 @@ class Bishop(Piece):
             setattr( self, key, value )
 
 
-    def get_possible_moves( self, **kwargs ):
-        #board, player, exclude_tiles
-        board = kwargs.board
-        player = kwargs.player
-        exclude_tiles = kwargs.exclude_tiles
+    def get_possible_moves( self, board, player ):
 
         self.available_tiles = [] # array of (x,y) coordinate tuples
 
         # A bishop can move diagonally. We'll scan those directions clockwise
 
         # Scan up-right
-        self.recursive_tile_scanner( board=board, direction=[1,1,1,1,-1], exclude_tiles=exclude_tiles )
+        self.recursive_tile_scanner( board, [1,1,1,1,-1] )
 
         # Scan down-right
-        self.recursive_tile_scanner( board=board, direction=[1,-1,1,-1,-1], exclude_tiles=exclude_tiles )
+        self.recursive_tile_scanner( board, [1,-1,1,-1,-1] )
 
         # Scan down-left
-        self.recursive_tile_scanner( board=board, direction=[-1,-1,-1,-1,-1], exclude_tiles=exclude_tiles )
+        self.recursive_tile_scanner( board, [-1,-1,-1,-1,-1])
 
         # Scan up-left
-        self.recursive_tile_scanner( board=board, direction=[-1,1,-1,1,-1], exclude_tiles=exclude_tiles )
+        self.recursive_tile_scanner( board, [-1,1,-1,1,-1] )
 
         return self.available_tiles

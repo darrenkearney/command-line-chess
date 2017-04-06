@@ -1,5 +1,7 @@
 class Piece(object):
 
+    exclude_tiles = []
+
     def __init__( self, **kwargs ):
         
         # Normal setup
@@ -40,8 +42,7 @@ class Piece(object):
         print(message)
 
         
-    def get_possible_moves( self, **kwargs ):
-        # board = [[]], player = "", exclude_tiles = []
+    def get_possible_moves( board = [[]], player = "" ):
 
         return self.available_tiles
 
@@ -81,20 +82,16 @@ class Piece(object):
         pass
 
 
-    def recursive_tile_scanner( self, **kwargs ):
-        # takes board, direction, exclude_tiles
-        # Scans tiles in direction based on steps
+    def recursive_tile_scanner( self, board, args ):
+        # takes board, args
+        # Scans tiles in args based on steps
         # Limited by number in limit. If given -1 or less, runs without limit
 
-        board = kwargs.board
-        direction = kwargs.direction
-        exclude_tiles = kwargs.exclude_tiles # List of (x,y) coords
-
-        x = direction[0]
-        y = direction[1]
-        step_x = direction[2]
-        step_y = direction[3]
-        limit = direction[4]
+        x = args[0]
+        y = args[1]
+        step_x = args[2]
+        step_y = args[3]
+        limit = args[4]
 
         # If limit is 0 exit. 
         if limit == 0:
@@ -130,21 +127,18 @@ class Piece(object):
 
         elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0]+x ] ) == False:
 
-            if exclude_tiles != [] and (self.pos[0]+x, self.pos[1]+y) in exclude_tiles:
-                return
-            else: 
-                # Add tile to available tiles if empty, and continue
-                self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
+            # Add tile to available tiles if empty, and continue
+            self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
 
 
         # Increment/decrement direction by step
-        direction[0] = x + step_x
-        direction[1] = y + step_y
+        args[0] = x + step_x
+        args[1] = y + step_y
         
         # decrement the limit
-        direction[4] = limit - 1
+        args[4] = limit - 1
 
-        self.recursive_tile_scanner( board, direction )
+        self.recursive_tile_scanner( board, args )
 
 
     def set_state_of_piece( self, state_list ):
