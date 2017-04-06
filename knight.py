@@ -27,27 +27,27 @@ class Knight(Piece):
         move_limit = 1
 
         # Scan up up right
-        self.recursive_tile_scanner( board, [1,2,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[1,2,0,0, move_limit ] )
 
         # Scan up right right
-        self.recursive_tile_scanner( board, [2,1,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[2,1,0,0, move_limit ] )
 
         # Scan down right right
-        self.recursive_tile_scanner( board, [2,-1,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[2,-1,0,0, move_limit ] )
 
         # Scan down down right
-        self.recursive_tile_scanner( board, [1,-2,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[1,-2,0,0, move_limit ] )
 
         # Scan down down left
-        self.recursive_tile_scanner( board, [-1,-2,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[-1,-2,0,0, move_limit ] )
 
         # Scan down left left
-        self.recursive_tile_scanner( board, [-2,-1,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[-2,-1,0,0, move_limit ] )
 
         # Scan up left left
-        self.recursive_tile_scanner( board, [-2,1,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[-2,1,0,0, move_limit ] )
 
         # Scan up up left
-        self.recursive_tile_scanner( board, [-1,2,0,0, move_limit ] )
+        self.recursive_tile_scanner( board=board, direction=[-1,2,0,0, move_limit ] )
 
         return self.available_tiles

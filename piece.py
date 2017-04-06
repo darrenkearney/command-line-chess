@@ -39,8 +39,10 @@ class Piece(object):
         # Out the message as it happens
         print(message)
 
+        
+    def get_possible_moves( self, **kwargs ):
+        # board = [[]], player = "", exclude_tiles = []
 
-    def get_possible_moves( self, board = [[]], player = "" ):
         return self.available_tiles
 
 
@@ -79,10 +81,14 @@ class Piece(object):
         pass
 
 
-    def recursive_tile_scanner( self, board, direction ):
-        # Unfinished
+    def recursive_tile_scanner( self, **kwargs ):
+        # takes board, direction, exclude_tiles
         # Scans tiles in direction based on steps
         # Limited by number in limit. If given -1 or less, runs without limit
+
+        board = kwargs.board
+        direction = kwargs.direction
+        exclude_tiles = kwargs.exclude_tiles # List of (x,y) coords
 
         x = direction[0]
         y = direction[1]
@@ -123,8 +129,12 @@ class Piece(object):
             return
 
         elif self.is_piece_at_tile( board[ self.pos[1]+y][ self.pos[0]+x ] ) == False:
-            # Add tile to available tiles if empty, and continue
-            self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
+
+            if exclude_tiles != [] and (self.pos[0]+x, self.pos[1]+y) in exclude_tiles:
+                return
+            else: 
+                # Add tile to available tiles if empty, and continue
+                self.available_tiles.append( (self.pos[0]+x, self.pos[1]+y) )
 
 
         # Increment/decrement direction by step
@@ -145,5 +155,3 @@ class Piece(object):
         # Now that this piece is being selected, see what available moves it has
         self.get_possible_moves( board, player )
         print("Available Tiles: {}".format(self.available_tiles))
-
-

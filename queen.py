@@ -28,27 +28,27 @@ class Queen(Piece):
         # A queen can move horizontally, vertically and diagonally. We'll scan those directions clockwise
 
         # Scan up
-        self.recursive_tile_scanner( board, [0,1,0,1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[0,1,0,1,-1] )
 
         # Scan up-right
-        self.recursive_tile_scanner( board, [1,1,1,1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[1,1,1,1,-1] )
 
         # Scan right
-        self.recursive_tile_scanner( board, [1,0,1,0,-1] )
+        self.recursive_tile_scanner( board=board, direction=[1,0,1,0,-1] )
 
         # Scan down-right
-        self.recursive_tile_scanner( board, [1,-1,1,-1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[1,-1,1,-1,-1] )
 
         # Scan down
-        self.recursive_tile_scanner( board, [0,-1,0,-1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[0,-1,0,-1,-1] )
 
         # Scan down-left
-        self.recursive_tile_scanner( board, [-1,-1,-1,-1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[-1,-1,-1,-1,-1] )
 
         # Scan left
-        self.recursive_tile_scanner( board, [-1,0,-1,0,-1] )
+        self.recursive_tile_scanner( board=board, direction=[-1,0,-1,0,-1] )
 
         # Scan up-left
-        self.recursive_tile_scanner( board, [-1,1,-1,1,-1] )
+        self.recursive_tile_scanner( board=board, direction=[-1,1,-1,1,-1] )
 
         return self.available_tiles

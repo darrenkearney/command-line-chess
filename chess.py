@@ -573,11 +573,13 @@ Help menu
                 self.debug_log("@@@@ piece at tile. piece.name = {}, p.side = {}".format(p.name.lower(), p.side))
 
                 if p.name.lower() == 'king' and p.side == self.get_opposite_player(player):
-                        # If king is present set opponent's check to True
+                    # If king is present set opponent's check to True
 
-                        self.debug_log("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
+                    self.debug_log("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
 
-                        return True
+                    self.player_info['exclude_tiles'].append(tile)
+
+                    return True
      
         self.debug_log("@@@@ Piece {} not causing Check!".format(piece))
 
@@ -1049,3 +1051,24 @@ Help menu
                 state_list.remove("PIECE_CAUSES_CHECK")
 
         self.set_state_of_piece( piece, state_list )
+
+
+    def in_check_available_tiles_of_piece( self, piece ):
+
+        pass
+
+
+    def is_piece_available_tiles_cancelling_check_state( self, piece, check_causers ):
+        # True if cancels check state
+        # False if maintains check state
+
+        for tile in piece.available_tiles:
+            # if this tile was occupied by this piece
+
+            for checker in check_causers:
+                # are they still causing check?
+
+                checker.get_possible_moves(get_possible_moves=tile)
+
+
+        return False
