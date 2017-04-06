@@ -604,7 +604,7 @@ Help menu
 
                     self.debug_log("@@@@ Piece {} causes Check! ! ! ! !".format(piece))
 
-                    self.player_info['exclude_tiles'].append(tile)
+                    # self.player_info['exclude_tiles'].append(tile)
 
                     return True
      
@@ -846,8 +846,28 @@ Help menu
 
         self.selected_tile_pos = [x,y]
 
-        # Set up possible moves (must send the chess board to this method)
-        #self.selected_piece.get_possible_moves( board = self.board, current_player = self.current_player  )
+        if self.player_info[self.current_player]['is_in_check'] == True:
+            # Oh noes, we're going to have to rescan those tiles!
+            self.piece_tiles_while_in_check( self.selected_piece )
+
+
+    def piece_tiles_while_in_check( self, piece ):
+        
+        available_tiles = []
+
+        exclude_tiles = []
+
+        for tile in self.player_info[self.get_opposite_player()]['check_pieces']:
+        
+            exclude_tiles.append(tile)
+
+        for tile in piece.available_tiles:
+
+            if tile not in exclude_tiles:
+                
+                available_tiles.append(tile)
+
+
 
 
     def set_state_of_piece( self, piece, state_list ):
@@ -1080,22 +1100,22 @@ Help menu
         self.set_state_of_piece( piece, state_list )
 
 
-    def in_check_available_tiles_of_piece( self, piece ):
+    # def in_check_available_tiles_of_piece( self, piece ):
 
-        pass
-
-
-    def is_piece_available_tiles_cancelling_check_state( self, piece, check_causers ):
-        # True if cancels check state
-        # False if maintains check state
-
-        for tile in piece.available_tiles:
-            # if this tile was occupied by this piece
-
-            for checker in check_causers:
-                # are they still causing check?
-
-                checker.get_possible_moves(get_possible_moves=tile)
+    #     pass
 
 
-        return False
+    # def is_piece_available_tiles_cancelling_check_state( self, piece, check_causers ):
+    #     # True if cancels check state
+    #     # False if maintains check state
+
+    #     for tile in piece.available_tiles:
+    #         # if this tile was occupied by this piece
+
+    #         for checker in check_causers:
+    #             # are they still causing check?
+
+    #             checker.get_possible_moves(get_possible_moves=tile)
+
+
+    #     return False
