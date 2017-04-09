@@ -37,6 +37,27 @@ class App():
         self.get_view('MAIN_MENU')
 
 
+    def colour_gradientify_title_text( self, title_art ):
+        # Given some ASCII art string
+        # Splits it, turns it into lines
+        # Uses line numbers to cycle through terminal colour codes
+        # returns the remade string
+
+        lines = title_art.split('\n')
+        title_string = ""
+
+        # Nice gradient start points
+        gradients = [28,40,178,190,220]
+        # Pick a random colour
+        r_gradient = random.choice(gradients)
+
+        # Let's add a splash of colour using our gradient start point
+        for line in lines:
+            title_string += "{}{}{}{}{}".format('\u001b[38;5;', str(r_gradient + int(lines.index(line) * 0.9 )), 'm', line,'\u001b[0m\n')
+
+        return title_string
+
+
     def input_int( self, message = '' ):
         # A handy reusable way of getting int from player/user
 
@@ -104,6 +125,51 @@ class App():
                 return choice
 
 
+    def victory_screen( self, player ):
+        # Something to show players on completing a game
+        
+        title = ''
+
+        if player == 'uppercase':
+            title_art = '''
+    8   8 8""""8 8""""8 8"""" 8"""8  8""""8 8""""8 8""""8 8"""" 
+    8   8 8    8 8    8 8     8   8  8    " 8    8 8      8     
+    8e  8 8eeee8 8eeee8 8eeee 8eee8e 8e     8eeee8 8eeeee 8eeee 
+    88  8 88     88     88    88   8 88     88   8     88 88    
+    88  8 88     88     88    88   8 88   e 88   8 e   88 88    
+    88ee8 88     88     88eee 88   8 88eee8 88   8 8eee88 88eee 
+                                                            
+                      8   8  8                                  
+                      8   8  8 e  eeeee eeeee                   
+                      8e  8  8 8  8   8 8   "                   
+                      88  8  8 8e 8e  8 8eeee                   
+                      88  8  8 88 88  8    88                   
+                      88ee8ee8 88 88  8 8ee88                   
+'''                                                            
+        elif player == 'lowercase':
+            title_art = '''
+    8                                                      
+    8     eeeee e   e  e eeee eeeee  eeee eeeee eeeee eeee 
+    8e    8  88 8   8  8 8  8 8      8  8     8 8   " 8  8 
+    88    8   8 8   8  8 8ee" 8      8    eeee8 8eeee 8ee" 
+    88    8   8 8e  8  8 88   88     88   88  8    88 88   
+    88ee  8eee8 88ee8ee8 88ee 88     88e8 88888 8ee88 88ee 
+                                                       
+                  8   8  8                             
+                  8   8  8 e  eeeee eeeee              
+                  8e  8  8 8  8   8 8   "              
+                  88  8  8 8e 8e  8 8eeee              
+                  88  8  8 88 88  8    88              
+                  88ee8ee8 88 88  8 8ee88              
+'''
+
+        if self.chess.settings['graphics'] == 'colourful':
+            title_string = self.colour_gradientify_title_text( title_art )
+        else:
+            title_string = title_art
+
+        print(u"\n{}\n".format(title_string))
+
     def get_view( self, view ):
         
         if view == 'MAIN_MENU':
@@ -121,9 +187,12 @@ class App():
             self.view = view
             return self.graphics_settings()
 
-        # elif view == 'GAME_SETTINGS':
+        #elif view == 'GAME_SETTINGS':
         #     return self.chess_settings()
 
+        elif view == 'VICTORY_SCREEN':
+            self.view = view
+            return self.victory_screen(self.chess.winner)
         else:
             print("View not found.")
             return self.get_view('MAIN_MENU')
@@ -187,17 +256,7 @@ class App():
                                                                           
     """
 
-        lines = title_art.split('\n')
-        title_string = ""
-
-         # Nice gradient start points
-        gradients = [28,40,178,190,220]
-        # Pick a random colour
-        r_gradient = random.choice(gradients)
-
-        # Let's add a splash of colour using our gradient start point
-        for line in lines:
-            title_string += "{}{}{}{}{}".format('\u001b[38;5;', str(r_gradient + int(lines.index(line) * 0.9 )), 'm', line,'\u001b[0m\n')
+        title_string = self.colour_gradientify_title_text( title_art )
 
         print(u"\n{}\n".format(title_string))
         print("\n    {}\n    https://github.com/darrenkearney/command-line-chess\n".format(motd))
@@ -280,10 +339,25 @@ class App():
                 # Get input
                 command = input(" > ")
 
-                if command == "menu":
-                    self.get_view("MAIN_MENU")
-                if command == "graphics":
-                    self.get_view("GRAPHICS_SETTINGS")
+                # Main Menu 'Screen'
+                if command == 'menu':
+                    self.get_view('MAIN_MENU')
+                
+                # Graphics Settings 'screen'
+                if command == 'graphics':
+                    self.get_view('GRAPHICS_SETTINGS')
+
+                # Forfeit current game -
+                #   Current Player has chosen to forfeit the game.
+                if command == 'forfeit':
+                    self.chess.forfeit()
+
+                    self.get_view('VICTORY_SCREEN')
+
+                    input(" (Press any key to continue.)")
+
+                    self.get_view('MAIN_MENU')
+                
                 else:
                     self.chess.command == command
 
@@ -301,7 +375,7 @@ class App():
                 if chess.state['CHECKMATE'] == True:
                     is_playing = False
             else:
-                chess.do_command('exit')
+                chess.do_command('menu')
                 
         except KeyboardInterrupt:
             chess.do_command('exit')

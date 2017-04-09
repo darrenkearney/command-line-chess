@@ -388,6 +388,15 @@ class Chess:
         if command == "load":
             self.load_game()
 
+        #
+        # Forfeit
+        #
+        if command == "forfeit":
+            self.forfeit()
+
+        #
+        # Quit / Exit Game
+        #
         if command == "exit" or command == "quit":
             print("\nThanks for playing chess. Goodbye!\n")
             exit()
@@ -441,7 +450,7 @@ class Chess:
                 self.select_piece( coords = self.cursor_pos )
 
         print("Your command was '{}'. Cursor at {}".format(command, self.cursor_pos))
-    
+
 
     def end_turn( self ):
         print("Ending turn for {}.".format( self.current_player ))
@@ -457,6 +466,22 @@ class Chess:
 
         # Reset is turn ended check
         self.is_turn_ended = False
+
+
+    def forfeit( self ):
+        # The current player has forfeited the match.
+        # Anything that needs to get tidied up can get done here.
+
+        # Set the winner
+        self.winner = self.get_opposite_player()
+
+        print("\n{}\n{} has forfeited the match. {} wins.\n".format(
+            '~'*42,
+            self.current_player,
+            self.get_opposite_player()
+        ))
+
+        return
 
 
     def get_board_string( self ):
@@ -509,6 +534,8 @@ Help menu
     Commands:
 
         help / h / ?    Help (display this menu) = h / ? / help
+
+        forfeit         Declare your opponent the winner.
 
         menu            Return to Main menu.
         
