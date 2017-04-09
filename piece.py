@@ -43,6 +43,7 @@ class Piece(object):
 
         
     def get_possible_moves( board = [[]], player = "" ):
+        # Use recursive_tile_scanner in subclasses to acquire piece moveset.
 
         return self.available_tiles
 

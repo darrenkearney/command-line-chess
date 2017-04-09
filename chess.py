@@ -31,20 +31,22 @@ class Chess:
 
         self.player_info = {
             self.current_player : {
+                'available_tiles' : [],
                 'check_pieces' : [],    # Player pieces causing opponent's Check
                 'is_in_check': False,
                 'last_cursor_pos': [0,0],
                 'name': "Player 1",
-                'pieces_taken': [],
-                'pieces': []
+                'pieces': [],
+                'pieces_taken': []
             },
             self.get_opposite_player() : {
+                'available_tiles' : [],
                 'check_pieces' : [],
                 'is_in_check': False,
                 'last_cursor_pos': [7,7],
                 'name': "Player 2",
-                'pieces_taken': [],
-                'pieces': []
+                'pieces': [],
+                'pieces_taken': []
             }
         }
         
@@ -421,8 +423,8 @@ class Chess:
         if command.lower() == "x":
 
             if self.is_piece_selected == True:
-                if (self.cursor_pos[0],self.cursor_pos[1]) in self.selected_piece.available_tiles:
-                    print("Fantastic! Let's move something.")
+
+                if self.before_move_checks( (self.cursor_pos[0],self.cursor_pos[1]) ) == True:
                     
                     self.move_piece( self.selected_piece.pos, self.cursor_pos )
                     
@@ -431,8 +433,6 @@ class Chess:
                     self.is_turn_ended = True
 
                 else:
-                    print("Cannot move to that tile.")
-
                     self.is_piece_selected = False # Deselect piece
 
             elif self.is_piece_selected == False:
@@ -441,10 +441,31 @@ class Chess:
                 self.select_piece( coords = self.cursor_pos )
 
         print("Your command was '{}'. Cursor at {}".format(command, self.cursor_pos))
-    
+
+
+    def before_move_checks( self, dest = None ):
+        # Tile is an (x,y) tuple, the coordinate to move into.
+        # Returns true if a move is possible, else false
+        
+        if dest == None:
+            dest = (self.cursor_pos[0],self.cursor_pos[1])
+
+        # Checks selected_piece.available_tiles array, which has been updated
+        # by other chess class methods with regard to available moves. 
+        if dest in self.selected_piece.available_tiles:
+            print("Fantastic! Let's move something.")
+            return True
+
+        else:
+            print("Cannot move to that tile.")
+            return False
+
 
     def end_turn( self ):
         print("Ending turn for {}.".format( self.current_player ))
+
+        # Set up ending players currently available move tiles
+        self.player_info[self.current_player]['available_tiles'] = self.get_all_available_tiles_for_player( self.current_player )
 
         # Save cursor pos
         self.player_info[self.current_player]['last_cursor_pos'] = self.cursor_pos
@@ -457,6 +478,22 @@ class Chess:
 
         # Reset is turn ended check
         self.is_turn_ended = False
+
+
+    def get_all_available_tiles_for_player( self, player = None ):
+
+        if player == None:
+            player == self.current_player
+
+        available_tiles = []
+
+        for piece in self.player_info[player]['pieces']:
+            available_tiles.append( piece.get_possible_moves(
+                board = self.board,
+                player = player
+            ))
+
+        return available_tiles
 
 
     def get_board_string( self ):
@@ -582,7 +619,6 @@ Help menu
         if player == None:
             player = self.current_player
         
-         
         # Detect state
         # Check it's currently available move tiles for presence of king
 
@@ -846,28 +882,17 @@ Help menu
 
         self.selected_tile_pos = [x,y]
 
-        if self.player_info[self.current_player]['is_in_check'] == True:
-            # Oh noes, we're going to have to rescan those tiles!
-            self.piece_tiles_while_in_check( self.selected_piece )
-
-
-    def piece_tiles_while_in_check( self, piece ):
-        
-        available_tiles = []
-
-        exclude_tiles = []
-
-        for tile in self.player_info[self.get_opposite_player()]['check_pieces']:
-        
-            exclude_tiles.append(tile)
-
-        for tile in piece.available_tiles:
-
-            if tile not in exclude_tiles:
-                
-                available_tiles.append(tile)
-
-
+        # Update the pieces available tiles attribute based on game state
+        # Work in progress
+        # if self.player_info[self.current_player]['is_in_check'] == True:
+        #     # Loop through all opponents pieces to get their possible moves
+        #     for exclude_tile in self.player_info[self.get_opposite_player()]['available_tiles']:
+        #         # Loop through selected_piece available tiles, removing matches
+        #         if exclude_tile in self.selected_piece.available_tiles:
+        #             print("exclude")
+        #             #self.selected_piece.available_tiles.remove(exclude_tile)
+        # print("other players available tiles")
+        # print(self.player_info[self.get_opposite_player()]['available_tiles'])
 
 
     def set_state_of_piece( self, piece, state_list ):
