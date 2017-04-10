@@ -350,16 +350,19 @@ class App():
                 # Forfeit current game -
                 #   Current Player has chosen to forfeit the game.
                 if command == 'forfeit':
+
                     self.chess.forfeit()
 
                     self.get_view('VICTORY_SCREEN')
-
+                    
                     input(" (Press any key to continue.)")
 
-                    self.get_view('MAIN_MENU')
+                    self.is_game_running = False # Set game resuming unavailable
+
+                    is_playing = False
                 
                 else:
-                    self.chess.command == command
+                    self.chess.command = command
 
                 self.chess.add_command( command )
 
@@ -375,7 +378,7 @@ class App():
                 if chess.state['CHECKMATE'] == True:
                     is_playing = False
             else:
-                chess.do_command('menu')
+                self.get_view('MAIN_MENU')
                 
         except KeyboardInterrupt:
             chess.do_command('exit')
