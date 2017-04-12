@@ -19,6 +19,10 @@ class Knight(Piece):
 
 
     def get_possible_moves( self, board, player ):
+        # The games board is board[y][x] but every reference to a position is (x,y)
+        # A for loop that checks for possible movement of this piece on the game board.
+        # Returns array of coordinate tuples of possible tiles available for the piece to move into.
+        # Does not consider check rules or special rules - only piece's moveset.
 
         self.available_tiles = [] # array of (x,y) coordinate tuples
 

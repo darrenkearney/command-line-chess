@@ -87,7 +87,7 @@ class App():
         message = '    {}\n\n'.format( message_obj['message'] )
 
         for item in message_obj['items']:
-        
+
             message += '        {})  {}\n'.format( message_obj['items'].index(item) + 1, item )
 
         if self.view != 'MAIN_MENU':

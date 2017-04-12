@@ -22,8 +22,8 @@ class Pawn(Piece):
     def get_possible_moves( self, board, player ):
         # The games board is board[y][x] but every reference to a position is (x,y)
         # A for loop that checks for possible movement of this piece on the game board.
-        # Returns array of coordinate tuples of legal tiles available for the piece to move into.
-        #
+        # Returns array of coordinate tuples of possible tiles available for the piece to move into.
+        # Does not consider check rules or special rules - only piece's moveset.
         # A pawn has a simple moveset. It can only advance in the y access unless taking a piece in adjacent lane
         #
 
