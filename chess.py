@@ -496,6 +496,24 @@ class Chess:
         return available_tiles
 
 
+    def get_all_playable_tiles_for_player( self, player=None ):
+        # Uses get_playable_tiles_for_piece on each piece for player
+
+        if player == None:
+            player = self.current_player
+
+        all_playable_tiles = []
+
+        for piece in self.player_info[player]['pieces']:
+            all_playable_tiles.append(self.get_playable_tiles_for_piece(piece=piece, player=player))
+
+        self.player_info[player]['playable_tiles'] = all_playable_tiles
+
+        self.debug_log("Get all playable tiles for player {}: {}".format(player, all_playable_tiles))
+
+        return self.player_info[player]['playable_tiles']
+
+
     def get_board_string( self ):
 
         output_string = ""
@@ -572,6 +590,97 @@ Help menu
                         should only successfully place on legal tiles. Let me
                         know if there are any wierd bugs!
 """
+
+
+def get_playable_tiles_for_piece( self, piece, player=None ):
+        # Make a copy of the current board state
+        # On this board copy, simulate actual moves and get results
+        # For each available tile already stored in the piece, check to see if
+        # moving the piece into that position causes check. If it doesn't then
+        # that tile is considered a playable tile
+        # Currently is not making a copy of all pieces, though this may be
+        # a worthwhile venture in future - need to test.
+        # I've made it work for now though.
+
+        self.debug_log("Prediction: Getting Available Tiles for piece: {}".format(piece))
+
+        if player == None:
+            player = self.current_player
+
+        opponent = self.get_opposite_player(player)
+
+        # Make a copy of the board state for simulation
+        self.sim_board = list(self.board)
+        self.sim_taken_piece = None
+
+        # Setup a fresh array of playable tiles
+        piece.playable_tiles = []
+
+        # Store the original location of this piece
+        origin_pos = tuple(piece.pos)
+
+        # Using sim board, do method to update it's possible/available tiles
+        available_tiles = piece.get_possible_moves(
+                board = self.sim_board,
+                player = player
+        )
+
+        self.debug_log("Prediction: Checking through available tiles for {} {}".format(player, piece.name))
+        # For each available tile from sim, move it there and check.
+        for tile in available_tiles:
+
+            self.debug_log("Prediction: [ Moving ] {} {} -> {} tile on Simulated board".format(piece.name, piece.pos, tile))
+
+            self.move_piece( src=piece.pos, dest=tile, board=self.sim_board )
+
+            # Check to see if this causes check on the sim board
+            # Loop through each opponent piece checking individually
+            for opponent_piece in self.player_info[opponent]['pieces']:
+
+                self.debug_log("Prediction: Checking opponent's {} moves for check on Simulated board".format(opponent_piece.name))
+
+                x = opponent_piece.pos[0]
+                y = opponent_piece.pos[1]
+
+                # Let's first check to see if the piece exists on the sim board
+                # As is may have been taken in a simmed move
+                is_piece_at_tile = self.is_piece_at_tile( opponent_piece.pos, self.sim_board )
+
+                # If there is a piece at the tile, let's continue with the test
+                if is_piece_at_tile == True:
+
+                    is_piece_causing_check = self.is_piece_causing_check( piece=self.sim_board[y][x],
+                                                                        player=opponent,
+                                                                        board=self.sim_board )
+
+                if is_piece_causing_check == False:
+
+                    if tile not in piece.playable_tiles:
+                        piece.playable_tiles.append(tile)
+
+                if self.sim_taken_piece != None:
+                    # Reset move pos
+                    self.debug_log("Prediction: Resetting {} from {} -> {} on sim board".format(piece.name, piece.pos, origin_pos))
+                    self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
+
+                    # Restore taken piece
+                    self.debug_log("Prediction: Restoring sim taken piece {} to {}".format(self.sim_taken_piece.name, self.sim_taken_piece.pos))
+                    self.sim_board[self.sim_taken_piece.pos[1]][self.sim_taken_piece.pos[0]] = self.sim_taken_piece
+                    self.sim_taken_piece = None
+
+        self.debug_log("Prediction: Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
+
+        # Reset move pos
+        self.debug_log("Prediction: Resetting simmed {} piece on sim board to original position {}".format(piece.name, origin_pos))
+        self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
+
+        # Refresh available tiles
+        available_tiles = piece.get_possible_moves(
+                board = self.board,
+                player = player
+        )
+
+        return piece.playable_tiles
 
 
     def get_opposite_player( self, player = None ):
@@ -1221,102 +1330,3 @@ Help menu
 
 
     #     return False
-
-    # def get_all_playable_tiles_for_player( self, player=None ):
-    #     # Each piece has possible moves - basic moveset
-    #     # Each piece has playable moves - refined by check state and specials
-
-    #     if player == None:
-    #         player = self.current_player
-
-
-    #     # First get all the possible tiles
-    #     self.get_all_available_tiles_for_player()
-
-    def get_playable_tiles_for_piece( self, piece, player=None ):
-        # Make a copy of the current board state
-        # On this board copy, simulate actual moves and get results
-        # For each available tile already stored in the piece, check to see if
-        # moving the piece into that position causes check. If it doesn't then
-        # that tile is considered a playable tile
-        # Currently is not making a copy of all pieces, though this may be
-        # a worthwhile venture in future - need to test.
-        # I've made it work for now though.
-
-        self.debug_log("Prediction: Getting Available Tiles for piece: {}".format(piece))
-
-        if player == None:
-            player = self.current_player
-
-        opponent = self.get_opposite_player(player)
-
-        # Make a copy of the board state for simulation
-        self.sim_board = list(self.board)
-        self.sim_taken_piece = None
-
-        # Setup a fresh array of playable tiles
-        piece.playable_tiles = []
-
-        # Store the original location of this piece
-        origin_pos = tuple(piece.pos)
-
-        # Using sim board, do method to update it's possible/available tiles
-        available_tiles = piece.get_possible_moves(
-                board = self.sim_board,
-                player = player
-        )
-
-        self.debug_log("Prediction: Checking through available tiles for {} {}".format(player, piece.name))
-        # For each available tile from sim, move it there and check.
-        for tile in available_tiles:
-
-            self.debug_log("Prediction: [ Moving ] {} {} -> {} tile on Simulated board".format(piece.name, piece.pos, tile))
-
-            self.move_piece( src=piece.pos, dest=tile, board=self.sim_board )
-
-            # Check to see if this causes check on the sim board
-            # Loop through each opponent piece checking individually
-            for opponent_piece in self.player_info[opponent]['pieces']:
-
-                self.debug_log("Prediction: Checking opponent's {} moves for check on Simulated board".format(opponent_piece.name))
-
-                x = opponent_piece.pos[0]
-                y = opponent_piece.pos[1]
-
-                # Let's first check to see if the piece exists on the sim board
-                # As is may have been taken in a simmed move
-                is_piece_at_tile = self.is_piece_at_tile( opponent_piece.pos, self.sim_board )
-
-                # If there is a piece at the tile, let's continue with the test
-                if is_piece_at_tile == True:
-
-                    is_piece_causing_check = self.is_piece_causing_check( piece=self.sim_board[y][x],
-                                                                        player=opponent,
-                                                                        board=self.sim_board )
-
-                if is_piece_causing_check == False:
-
-                    if tile not in piece.playable_tiles:
-                        piece.playable_tiles.append(tile)
-
-                if self.sim_taken_piece != None:
-                    # Reset move pos
-                    self.debug_log("Prediction: Resetting {} from {} -> {} on sim board".format(piece.name, piece.pos, origin_pos))
-                    self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
-
-                    # Restore taken piece
-                    self.debug_log("Prediction: Restoring sim taken piece {} to {}".format(self.sim_taken_piece.name, self.sim_taken_piece.pos))
-                    self.sim_board[self.sim_taken_piece.pos[1]][self.sim_taken_piece.pos[0]] = self.sim_taken_piece
-                    self.sim_taken_piece = None
-
-        self.debug_log("Prediction: Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
-
-        # Reset move pos
-        self.debug_log("Prediction: Resetting simmed {} piece on sim board to original position {}".format(piece.name, origin_pos))
-        self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
-        
-        # Refresh available tiles
-        available_tiles = piece.get_possible_moves(
-                board = self.board,
-                player = player
-        )
