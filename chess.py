@@ -600,10 +600,13 @@ Help menu
         return piece.state_list;
 
 
-    def is_opponent_at_tile( self, tile ):
+    def is_opponent_at_tile( self, tile, board=None ):
         # Returns True if opponent player has a piece on the tile
 
-        if type(self.board[ tile[1] ][ tile[0] ]) == str:
+        if board == None:
+            board = self.board
+
+        if type( board[ tile[1] ][ tile[0] ] ) == str:
             return False
 
         if self.get_opposite_player() == self.board[ tile[1] ][ tile[0] ].side:
@@ -612,18 +615,21 @@ Help menu
         return False
 
 
-    def is_piece_causing_check( self, piece, player = None ):
-        # Just a handy way to check if a piece is causing check.
+    def is_piece_causing_check( self, piece, player = None, board=None ):
+        # Just a handy way to check if a piece for the specified player
         # Returns True or False
 
         if player == None:
             player = self.current_player
+
+        if board == None:
+            board = self.board
         
         # Detect state
         # Check it's currently available move tiles for presence of king
 
         available_tiles = piece.get_possible_moves(
-            board = self.board,
+            board = board,
             player = player
         )
 
@@ -631,7 +637,7 @@ Help menu
 
             if self.is_piece_at_tile( tile ) == True:
 
-                p = self.board[tile[1]][tile[0]]
+                p = board[tile[1]][tile[0]]
 
                 self.debug_log("@@@@ piece at tile. piece.name = {}, p.side = {}".format(p.name.lower(), p.side))
 
@@ -735,39 +741,52 @@ Help menu
                 return choice
 
 
-    def move_piece( self, src, dest ):
+    def move_piece( self, src, dest, board=None ):
 
         # Generic move method - this is part of the chess class and not the piece class.
+        # Doesn't check available tiles or playable tiles, simply moves a piece.
+        # Can move a piece on either the game board, or any board - such as
+        # boards used for simulating moves in order to test for future gamestate
         # This will likely need to be looked at again in future to decide how to implement special moves
         # If the destination is not empty or containing a piece from the same player then move there.
 
-        if self.board[dest[1]][dest[0]] == "" or self.board[dest[1]][dest[0]].side != self.current_player:
+        # If no specific board is specified, use the main game board
+        if board == None:
+            board = self.board
+            is_sim_board = False
+        else:
+            is_sim_board = True
 
-            if self.is_opponent_at_tile( dest ) == True:
+        if board[dest[1]][dest[0]] == "" or board[dest[1]][dest[0]].side != self.current_player:
+
+            if self.is_opponent_at_tile( dest, board ) == True:
                 print("{} {} takes {} {}.".format(
                     self.player_info[ self.current_player ]['name'],
-                    self.board[src[1]][src[0]].name,
+                    board[src[1]][src[0]].name,
                     self.player_info[ self.get_opposite_player() ]['name'],
-                    self.board[dest[1]][dest[0]].name
+                    board[dest[1]][dest[0]].name
                 ))
 
                 # A piece is being taken. Add it to this players list of taken pieces.
-                self.player_info[self.current_player]['pieces_taken'].append(self.board[dest[1]][dest[0]].name)
+                self.player_info[self.current_player]['pieces_taken'].append(board[dest[1]][dest[0]].name)
 
 
-            self.board[dest[1]][dest[0]] = self.board[src[1]][src[0]]
+            board[dest[1]][dest[0]] = board[src[1]][src[0]]
             
             # Give it the new position tuple coordinate
-            self.board[dest[1]][dest[0]].pos = (dest[0], dest[1]) 
-
-            # Let the piece know it was moved
-            self.board[dest[1]][dest[0]].moved()
-
-            # Update the pieces state list
-            self.update_state_of_piece( self.board[dest[1]][dest[0]] )
+            board[dest[1]][dest[0]].pos = (dest[0], dest[1])
 
             # now that the piece has moved the boards src tile is set to blank
-            self.board[src[1]][src[0]] = ""
+            board[src[1]][src[0]] = ""
+
+            # If board was not a sim board do extra stuff
+            if is_sim_board == False:
+
+                # Let the piece know it was moved
+                board[dest[1]][dest[0]].moved()
+
+                # Update the pieces state list
+                self.update_state_of_piece( board[dest[1]][dest[0]] )
 
 
     def new_piece( self, char = "", pos = (0,0), side = "" ):
@@ -862,7 +881,8 @@ Help menu
 
         if self.current_player != self.board[y][x].side:
             if self.is_piece_selected == False:
-                print("Cannot select the other player's piece. (You: {}, Piece: {})".format(self.current_player, self.board[y][x].side))
+                print("Cannot select the other player's piece. (You: {}, Piece: {})".format(
+                    self.current_player, self.board[y][x].side))
                 return False
             else:
                 print("Taking enemy pieces is not yet implemented properly! Sorry :O")
@@ -893,6 +913,10 @@ Help menu
         #             #self.selected_piece.available_tiles.remove(exclude_tile)
         # print("other players available tiles")
         # print(self.player_info[self.get_opposite_player()]['available_tiles'])
+
+
+        # Get PLAYABLE tiles - putting it here pending refactor of select()
+        self.get_playable_tiles_for_piece(self.selected_piece)
 
 
     def set_state_of_piece( self, piece, state_list ):
@@ -946,11 +970,17 @@ Help menu
                     self.debug_log("@@@@ game_board_split[y][x] = {}".format(game_board_split[y][x]))
 
                     if game_board_split[y][x] in board_setup_validator[0]:
-                        self.board[y][x] = self.new_piece( char = game_board_split[y][x], pos = (x, y), side = "lowercase" )
+                        self.board[y][x] = self.new_piece(
+                            char = game_board_split[y][x],
+                            pos = (x, y),
+                            side = "lowercase" )
                         self.player_info["lowercase"]['pieces'].append(self.board[y][x])
 
                     elif game_board_split[y][x] in board_setup_validator[1]:
-                        self.board[y][x] = self.new_piece( char = game_board_split[y][x], pos = (x, y), side = "uppercase" )
+                        self.board[y][x] = self.new_piece(
+                            char = game_board_split[y][x],
+                            pos = (x, y),
+                            side = "uppercase" )
                         self.player_info["uppercase"]['pieces'].append(self.board[y][x])
 
                     elif game_board_split[y][x] == 0:
@@ -996,19 +1026,31 @@ Help menu
 
                 for tile in range( len( self.board[0] ) ):
                     #char = board_setup_stack[tile]
-                    self.board[0][tile] = self.new_piece( board_setup_stack[1][tile], (tile, 0), "uppercase" ) # .upper()
+                    self.board[0][tile] = self.new_piece(
+                        char = board_setup_stack[1][tile],
+                        pos = (tile, 0),
+                        side = "uppercase" ) # .upper()
                     self.player_info[self.current_player]['pieces'].append(self.board[0][tile])
 
                 for tile in range( len( self.board[1] ) ):
-                    self.board[1][tile] = Pawn( char = self.settings['white_pawn_char'], pos = (tile, 1), side = "uppercase" ) # P
+                    self.board[1][tile] = Pawn( 
+                        char = self.settings['white_pawn_char'],
+                        pos = (tile, 1),
+                        side = "uppercase" ) # P
                     self.player_info[self.current_player]['pieces'].append(self.board[1][tile])
 
                 for tile in range( len( self.board[6] ) ):
-                    self.board[6][tile] = Pawn( char = self.settings['black_pawn_char'], pos = (tile, 6), side = "lowercase" ) # p
+                    self.board[6][tile] = Pawn(
+                        char = self.settings['black_pawn_char'],
+                        pos = (tile, 6),
+                        side = "lowercase" ) # p
                     self.player_info[self.get_opposite_player()]['pieces'].append(self.board[6][tile])
 
                 for tile in range( len( self.board[7] ) ):
-                    self.board[7][tile] = self.new_piece( board_setup_stack[0][tile], (tile, 7), "lowercase" )
+                    self.board[7][tile] = self.new_piece(
+                        char = board_setup_stack[0][tile],
+                        pos = (tile, 7),
+                        side = "lowercase" )
                     self.player_info[self.get_opposite_player()]['pieces'].append(self.board[7][tile])
 
                 self.debug_log("Uppercase pieces after board set up: {}".format(self.player_info[self.current_player]['pieces']))
@@ -1034,14 +1076,14 @@ Help menu
         # if self.command_list != []:
         #     self.do_command(self.command_list.pop())
 
-        # # update the current state of board
-        # self.update_state_of_board()
+        # # update the current state of game
+        # self.update_state_of_game()
 
         # Increment update count (our version of a time delta)
         self.update_count += 1
 
 
-    def update_state_of_board( self ):
+    def update_state_of_game( self ):
 
         ##
         ## Update both players
@@ -1056,7 +1098,7 @@ Help menu
                 self.update_state_of_piece(piece, player)
 
                 # If this piece has a king in it's available tiles, cause check
-                if self.is_piece_causing_check(piece, player) == True:
+                if self.is_piece_causing_check(piece, player, self.board) == True:
 
                     # Add it to list of check causing pieces
                     if piece.pos not in self.player_info[player]['check_pieces']:
@@ -1066,15 +1108,19 @@ Help menu
                     if self.player_info[self.get_opposite_player(player)]['is_in_check'] == False:
                         self.player_info[self.get_opposite_player(player)]['is_in_check'] = True
 
-                elif self.is_piece_causing_check(piece, player) == False:
+                elif self.is_piece_causing_check(piece, player, self.board) == False:
                     # If not, remove it from this players list of check pieces
                     if piece.pos in self.player_info[player]['check_pieces']:
                         i = self.player_info[player]['check_pieces'].index(piece.pos)
                         self.player_info[player]['check_pieces'].pop(i)
 
         # Debug log
-        self.debug_log("@@@@ {} check pieces {}".format(self.current_player, self.player_info[self.current_player]['check_pieces']))
-        self.debug_log("@@@@ {} check pieces {}".format(self.get_opposite_player(), self.player_info[self.get_opposite_player()]['check_pieces']))
+        self.debug_log("@@@@ {} check pieces {}".format(
+            self.current_player,
+            self.player_info[self.current_player]['check_pieces']))
+        self.debug_log("@@@@ {} check pieces {}".format(
+            self.get_opposite_player(),
+            self.player_info[self.get_opposite_player()]['check_pieces']))
 
         ##
         ##  Do stuff for current player with current check state
@@ -1112,7 +1158,7 @@ Help menu
         state_list = self.get_state_of_piece( piece )
 
         # Is it now causing check?
-        is_causing_check = self.is_piece_causing_check( piece, player )
+        is_causing_check = self.is_piece_causing_check( piece, player, self.board )
 
         if is_causing_check == True:
             if "PIECE_CAUSES_CHECK" not in state_list:
@@ -1130,7 +1176,8 @@ Help menu
     #     pass
 
 
-    # def is_piece_available_tiles_cancelling_check_state( self, piece, check_causers ):
+    # def is_piece_available_tiles_cancelling_check_state( 
+    #    self, piece, check_causers ):
     #     # True if cancels check state
     #     # False if maintains check state
 
@@ -1144,3 +1191,80 @@ Help menu
 
 
     #     return False
+
+    # def get_all_playable_tiles_for_player( self, player=None ):
+    #     # Each piece has possible moves - basic moveset
+    #     # Each piece has playable moves - refined by check state and specials
+
+    #     if player == None:
+    #         player = self.current_player
+
+
+    #     # First get all the possible tiles
+    #     self.get_all_available_tiles_for_player()
+
+    def get_playable_tiles_for_piece( self, piece, player=None ):
+        # Make a copy of the current board state
+        # On this board copy, simulate actual moves and get results
+        # For each available tile already stored in the piece, check to see if
+        # moving the piece into that position causes check. If it doesn't then
+        # that tile is considered a playable tile
+
+        self.debug_log("Prediction: Getting Available Tiles for piece: {}".format(piece))
+
+        if player == None:
+            player = self.current_player
+
+        opponent = self.get_opposite_player(player)
+
+        # Make a copy of the board state for simulation
+        self.sim_board = self.board
+
+        # Setup a fresh array of playable tiles
+        piece.playable_tiles = []
+
+        # Store the original location of this piece
+        origin_pos = piece.pos
+
+        # Using sim board, do method to update it's possible/available tiles
+        available_tiles = piece.get_possible_moves(
+                board = self.sim_board,
+                player = player
+        )
+
+        self.debug_log("Prediction: Checking through available tiles for {} {}".format(player, piece.name))
+        # For each available tile from sim, move it there and check.
+        for tile in available_tiles:
+
+            self.debug_log("Prediction: [ Moving ] {} -> {} tile on Simulated board".format(piece.name, tile))
+            self.move_piece( src=piece.pos, dest=tile, board=self.sim_board )
+
+            # Check to see if this causes check on the sim board
+            # Loop through each opponent piece checking individually
+            for opponent_piece in self.player_info[opponent]['pieces']:
+
+                self.debug_log("Prediction: Checking opponent's {} moves for check on Simulated board".format(opponent_piece.name))
+
+                x = opponent_piece.pos[0]
+                y = opponent_piece.pos[1]
+
+                is_piece_causing_check = self.is_piece_causing_check( piece=self.sim_board[y][x],
+                                                                      player=opponent,
+                                                                      board=self.sim_board )
+
+                if is_piece_causing_check == False:
+
+                    if tile not in piece.playable_tiles:
+                        piece.playable_tiles.append(tile)
+
+
+        self.debug_log("Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
+
+        # Refresh available tiles
+        available_tiles = piece.get_possible_moves(
+                board = self.board,
+                player = player
+        )
+
+        # Reset queen pos
+        self.move_piece( src=piece.pos, dest=origin_pos, board=self.board )

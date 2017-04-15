@@ -294,8 +294,8 @@ class App():
                 if self.chess.command_list != []:
                     self.chess.do_command(self.chess.command_list.pop())
 
-                # update the current state of board
-                self.chess.update_state_of_board()
+                # update the current state of game
+                self.chess.update_state_of_game()
 
             
                 if chess.state['CHECKMATE'] == True:
