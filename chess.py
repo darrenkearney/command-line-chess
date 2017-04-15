@@ -212,7 +212,7 @@ class Chess:
                 if self.board[y][x] == "":
 
                     # check state - if there is a piece selected then we want to render it's available move tiles
-                    if self.is_piece_selected == True and (x,y) in self.selected_piece.available_tiles:
+                    if self.is_piece_selected == True and (x,y) in self.selected_piece.playable_tiles:
                         
                         if alt % 2 == 0:
                             
@@ -239,7 +239,7 @@ class Chess:
                 else:
                     
                     if alt % 2 == 0:
-                        if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                        if self.is_piece_selected == True and (x,y) in self.selected_piece.playable_tiles:
                             line_x += "{}{}".format( "x", self.board[y][x] )
                         else:
                             line_x += "{}{}".format( tile_light_bg, self.board[y][x] )
@@ -248,7 +248,7 @@ class Chess:
                                 line_x += '\u001b[0m'
 
                     else:
-                        if self.is_piece_selected == True and [x,y] in self.selected_piece.available_tiles:
+                        if self.is_piece_selected == True and [x,y] in self.selected_piece.playable_tiles:
                             line_x += "{}{}".format( "x", self.board[y][x], )
                         else:
                             line_x += " {}".format( self.board[y][x] )
@@ -336,7 +336,8 @@ class Chess:
                 self.selected_piece.pos,
                 self.selected_piece.side))
 
-            print("Available Tiles: {}".format(self.selected_piece.available_tiles))
+            print("Moveset Tiles: {}".format(self.selected_piece.available_tiles))
+            print("Playable Tiles:  {}".format(self.selected_piece.playable_tiles))
 
             # Display who is in a Check state
         for player in [self.current_player, self.get_opposite_player()]:
@@ -453,10 +454,17 @@ class Chess:
         # Checks selected_piece.available_tiles array, which has been updated
         # by other chess class methods with regard to available moves. 
         if dest in self.selected_piece.available_tiles:
-            print("Fantastic! Let's move something.")
-            return True
+            self.debug_log("[Before Move Checks] Fantastic! Let's try move something.")
 
+            if dest in self.selected_piece.playable_tiles:
+                self.debug_log("[Before Move Checks] Dest in playable tiles. Let's do it!")
+                return True
+
+            else:
+                print("Cannot move into CHECK!")
+                return False
         else:
+
             print("Cannot move to that tile.")
             return False
 
@@ -592,7 +600,7 @@ Help menu
 """
 
 
-def get_playable_tiles_for_piece( self, piece, player=None ):
+    def get_playable_tiles_for_piece( self, piece, player=None ):
         # Make a copy of the current board state
         # On this board copy, simulate actual moves and get results
         # For each available tile already stored in the piece, check to see if
@@ -602,7 +610,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
         # a worthwhile venture in future - need to test.
         # I've made it work for now though.
 
-        self.debug_log("Prediction: Getting Available Tiles for piece: {}".format(piece))
+        self.debug_log("[Prediction]: Getting Available Tiles for piece: {}".format(piece))
 
         if player == None:
             player = self.current_player
@@ -615,6 +623,8 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
         # Setup a fresh array of playable tiles
         piece.playable_tiles = []
+        # And list of check causing tiles
+        sim_piece_check_tiles = []
 
         # Store the original location of this piece
         origin_pos = tuple(piece.pos)
@@ -625,11 +635,11 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
                 player = player
         )
 
-        self.debug_log("Prediction: Checking through available tiles for {} {}".format(player, piece.name))
+        self.debug_log("[Prediction]: Checking through available tiles for {} {}".format(player, piece.name))
         # For each available tile from sim, move it there and check.
         for tile in available_tiles:
 
-            self.debug_log("Prediction: [ Moving ] {} {} -> {} tile on Simulated board".format(piece.name, piece.pos, tile))
+            self.debug_log("[Prediction]: [ Moving ] {} {} -> {} tile on Simulated board".format(piece.name, piece.pos, tile))
 
             self.move_piece( src=piece.pos, dest=tile, board=self.sim_board )
 
@@ -637,7 +647,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
             # Loop through each opponent piece checking individually
             for opponent_piece in self.player_info[opponent]['pieces']:
 
-                self.debug_log("Prediction: Checking opponent's {} moves for check on Simulated board".format(opponent_piece.name))
+                self.debug_log("[Prediction]: Checking opponent's {} moves for check on Simulated board".format(opponent_piece.name))
 
                 x = opponent_piece.pos[0]
                 y = opponent_piece.pos[1]
@@ -653,25 +663,30 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
                                                                         player=opponent,
                                                                         board=self.sim_board )
 
-                if is_piece_causing_check == False:
+                if is_piece_causing_check == True:
+                    sim_piece_check_tiles.append(tile)
+                    self.debug_log("[Prediction]: OPPONENT {} PIECE CAUSES CHECK!   When {} moved to {}".format(opponent_piece.name, piece.name, opponent_piece.pos))
+
+                elif is_piece_causing_check == False:
 
                     if tile not in piece.playable_tiles:
-                        piece.playable_tiles.append(tile)
+                        if tile not in sim_piece_check_tiles:
+                            piece.playable_tiles.append(tile)
 
                 if self.sim_taken_piece != None:
                     # Reset move pos
-                    self.debug_log("Prediction: Resetting {} from {} -> {} on sim board".format(piece.name, piece.pos, origin_pos))
+                    self.debug_log("[Prediction]: Resetting {} from {} -> {} on sim board".format(piece.name, piece.pos, origin_pos))
                     self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
 
                     # Restore taken piece
-                    self.debug_log("Prediction: Restoring sim taken piece {} to {}".format(self.sim_taken_piece.name, self.sim_taken_piece.pos))
+                    self.debug_log("[Prediction]: Restoring sim taken piece {} to {}".format(self.sim_taken_piece.name, self.sim_taken_piece.pos))
                     self.sim_board[self.sim_taken_piece.pos[1]][self.sim_taken_piece.pos[0]] = self.sim_taken_piece
                     self.sim_taken_piece = None
 
-        self.debug_log("Prediction: Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
+        self.debug_log("[Prediction]: Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
 
         # Reset move pos
-        self.debug_log("Prediction: Resetting simmed {} piece on sim board to original position {}".format(piece.name, origin_pos))
+        self.debug_log("[Prediction]: Resetting simmed {} piece on sim board to original position {}".format(piece.name, origin_pos))
         self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
 
         # Refresh available tiles
@@ -701,7 +716,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
         if player == "white":
             return "black"
-    
+
         return None
 
 
@@ -720,7 +735,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
         if self.get_opposite_player() == self.board[ tile[1] ][ tile[0] ].side:
             return True
-        
+
         return False
 
 
@@ -758,7 +773,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
                     # self.player_info['exclude_tiles'].append(tile)
 
                     return True
-     
+
         self.debug_log("@@@@ Piece {} not causing Check!".format(piece))
 
         return False
@@ -770,7 +785,7 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
             board = self.board
 
         # Returns True if opponent player has a piece on the tile
-        
+
         if type(board[coords[1]][coords[0]]) == str:
             return False
 
@@ -811,10 +826,6 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
         print("Loading...")
 
-        # load_file = open(path,'rt')
-        # save_game = load_file.read()
-        # load_file.close()
-
         # Read JSON file
         with open(path) as data_file:
             data_loaded = json.load(data_file)
@@ -854,7 +865,6 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
 
     def move_piece( self, src, dest, board=None ):
-
         # Generic move method - this is part of the chess class and not the piece class.
         # Doesn't check available tiles or playable tiles, simply moves a piece.
         # Can move a piece on either the game board, or any board - such as
@@ -1041,19 +1051,6 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
         self.selected_tile_pos = [x,y]
 
-        # Update the pieces available tiles attribute based on game state
-        # Work in progress
-        # if self.player_info[self.current_player]['is_in_check'] == True:
-        #     # Loop through all opponents pieces to get their possible moves
-        #     for exclude_tile in self.player_info[self.get_opposite_player()]['available_tiles']:
-        #         # Loop through selected_piece available tiles, removing matches
-        #         if exclude_tile in self.selected_piece.available_tiles:
-        #             print("exclude")
-        #             #self.selected_piece.available_tiles.remove(exclude_tile)
-        # print("other players available tiles")
-        # print(self.player_info[self.get_opposite_player()]['available_tiles'])
-
-
         # Get PLAYABLE tiles - putting it here pending refactor of select()
         self.get_playable_tiles_for_piece(self.selected_piece)
 
@@ -1199,24 +1196,10 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
 
     def update( self ):
         # Run a "Frame" (typically on executing a command)
+        # Is called from app.py along with other update stuff.
 
         # Display chess board
         self.display()
-
-        ###
-        ### Commented out as we will pass input into the chess class via the app.py
-        ###
-        # # Get input
-        # self.command = input(" > ")
-        # self.add_command( self.command )
-
-        # # Do command (such as move)
-        # # If the command list is not empty, pop a command and do it.
-        # if self.command_list != []:
-        #     self.do_command(self.command_list.pop())
-
-        # # update the current state of game
-        # self.update_state_of_game()
 
         # Increment update count (our version of a time delta)
         self.update_count += 1
@@ -1327,6 +1310,5 @@ def get_playable_tiles_for_piece( self, piece, player=None ):
     #             # are they still causing check?
 
     #             checker.get_possible_moves(get_possible_moves=tile)
-
 
     #     return False
