@@ -655,15 +655,18 @@ Help menu
         return False
 
 
-    def is_piece_at_tile( self, coords ):
+    def is_piece_at_tile( self, coords, board=None ):
+
+        if board == None:
+            board = self.board
 
         # Returns True if opponent player has a piece on the tile
         
-        if type(self.board[coords[1]][coords[0]]) == str:
+        if type(board[coords[1]][coords[0]]) == str:
             return False
 
-        if self.board[coords[1]][coords[0]].side in ["uppercase", "lowercase"]:
-            self.debug_log("+-+-+-+-+-+-+    Something at tile {} and it's type is {}".format(coords, type(self.board[coords[1]][coords[0]]) ))
+        if board[coords[1]][coords[0]].side in ["uppercase", "lowercase"]:
+            self.debug_log("+-+-+-+-+-+-+    Something at tile {} and it's type is {}".format(coords, type(board[coords[1]][coords[0]]) ))
             return True
 
         return False
@@ -754,33 +757,60 @@ Help menu
         if board == None:
             board = self.board
             is_sim_board = False
+        elif board is self.board:
+            # It is referencing the exact self.board in memory
+            is_sim_board = False
         else:
+            # It's a simulation board
             is_sim_board = True
+
+        self.debug_log("Move occurring. is_sim_board = {}".format(is_sim_board))
 
         if board[dest[1]][dest[0]] == "" or board[dest[1]][dest[0]].side != self.current_player:
 
-            if self.is_opponent_at_tile( dest, board ) == True:
-                print("{} {} takes {} {}.".format(
-                    self.player_info[ self.current_player ]['name'],
-                    board[src[1]][src[0]].name,
-                    self.player_info[ self.get_opposite_player() ]['name'],
-                    board[dest[1]][dest[0]].name
-                ))
+            if is_sim_board == True:
 
-                # A piece is being taken. Add it to this players list of taken pieces.
-                self.player_info[self.current_player]['pieces_taken'].append(board[dest[1]][dest[0]].name)
+                if self.is_opponent_at_tile( dest, board ) == True:
+                    print("Sim {} {} takes {} {}.".format(
+                        self.player_info[ self.current_player ]['name'],
+                        board[src[1]][src[0]].name,
+                        self.player_info[ self.get_opposite_player() ]['name'],
+                        board[dest[1]][dest[0]].name
+                    ))
 
+                    # A piece is being taken on a simmed baord.
+                    # Set is as current sim taken piece
+                    self.sim_taken_piece = board[dest[1]][dest[0]]
 
-            board[dest[1]][dest[0]] = board[src[1]][src[0]]
-            
-            # Give it the new position tuple coordinate
-            board[dest[1]][dest[0]].pos = (dest[0], dest[1])
+                board[dest[1]][dest[0]] = board[src[1]][src[0]]
 
-            # now that the piece has moved the boards src tile is set to blank
-            board[src[1]][src[0]] = ""
+                # Give it the new position tuple coordinate
+                board[dest[1]][dest[0]].pos = (dest[0], dest[1])
+
+                # now that the piece has moved the boards src tile is set to blank
+                board[src[1]][src[0]] = ""
 
             # If board was not a sim board do extra stuff
-            if is_sim_board == False:
+            elif is_sim_board == False:
+
+                if self.is_opponent_at_tile( dest, board ) == True:
+                    print("{} {} takes {} {}.".format(
+                        self.player_info[ self.current_player ]['name'],
+                        board[src[1]][src[0]].name,
+                        self.player_info[ self.get_opposite_player() ]['name'],
+                        board[dest[1]][dest[0]].name
+                    ))
+
+                    # A piece is being taken. Add it to this players list of taken pieces.
+                    self.player_info[self.current_player]['pieces_taken'].append(board[dest[1]][dest[0]].name)
+
+                board[dest[1]][dest[0]] = board[src[1]][src[0]]
+
+                # Give it the new position tuple coordinate
+                board[dest[1]][dest[0]].pos = (dest[0], dest[1])
+
+                # now that the piece has moved the boards src tile is set to blank
+                board[src[1]][src[0]] = ""
 
                 # Let the piece know it was moved
                 board[dest[1]][dest[0]].moved()
@@ -1209,6 +1239,9 @@ Help menu
         # For each available tile already stored in the piece, check to see if
         # moving the piece into that position causes check. If it doesn't then
         # that tile is considered a playable tile
+        # Currently is not making a copy of all pieces, though this may be
+        # a worthwhile venture in future - need to test.
+        # I've made it work for now though.
 
         self.debug_log("Prediction: Getting Available Tiles for piece: {}".format(piece))
 
@@ -1218,13 +1251,14 @@ Help menu
         opponent = self.get_opposite_player(player)
 
         # Make a copy of the board state for simulation
-        self.sim_board = self.board
+        self.sim_board = list(self.board)
+        self.sim_taken_piece = None
 
         # Setup a fresh array of playable tiles
         piece.playable_tiles = []
 
         # Store the original location of this piece
-        origin_pos = piece.pos
+        origin_pos = tuple(piece.pos)
 
         # Using sim board, do method to update it's possible/available tiles
         available_tiles = piece.get_possible_moves(
@@ -1236,7 +1270,8 @@ Help menu
         # For each available tile from sim, move it there and check.
         for tile in available_tiles:
 
-            self.debug_log("Prediction: [ Moving ] {} -> {} tile on Simulated board".format(piece.name, tile))
+            self.debug_log("Prediction: [ Moving ] {} {} -> {} tile on Simulated board".format(piece.name, piece.pos, tile))
+
             self.move_piece( src=piece.pos, dest=tile, board=self.sim_board )
 
             # Check to see if this causes check on the sim board
@@ -1248,23 +1283,40 @@ Help menu
                 x = opponent_piece.pos[0]
                 y = opponent_piece.pos[1]
 
-                is_piece_causing_check = self.is_piece_causing_check( piece=self.sim_board[y][x],
-                                                                      player=opponent,
-                                                                      board=self.sim_board )
+                # Let's first check to see if the piece exists on the sim board
+                # As is may have been taken in a simmed move
+                is_piece_at_tile = self.is_piece_at_tile( opponent_piece.pos, self.sim_board )
+
+                # If there is a piece at the tile, let's continue with the test
+                if is_piece_at_tile == True:
+
+                    is_piece_causing_check = self.is_piece_causing_check( piece=self.sim_board[y][x],
+                                                                        player=opponent,
+                                                                        board=self.sim_board )
 
                 if is_piece_causing_check == False:
 
                     if tile not in piece.playable_tiles:
                         piece.playable_tiles.append(tile)
 
+                if self.sim_taken_piece != None:
+                    # Reset move pos
+                    self.debug_log("Prediction: Resetting {} from {} -> {} on sim board".format(piece.name, piece.pos, origin_pos))
+                    self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
 
-        self.debug_log("Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
+                    # Restore taken piece
+                    self.debug_log("Prediction: Restoring sim taken piece {} to {}".format(self.sim_taken_piece.name, self.sim_taken_piece.pos))
+                    self.sim_board[self.sim_taken_piece.pos[1]][self.sim_taken_piece.pos[0]] = self.sim_taken_piece
+                    self.sim_taken_piece = None
 
+        self.debug_log("Prediction: Playable tiles for {}: {}".format(piece.name, piece.playable_tiles))
+
+        # Reset move pos
+        self.debug_log("Prediction: Resetting simmed {} piece on sim board to original position {}".format(piece.name, origin_pos))
+        self.move_piece( src=piece.pos, dest=origin_pos, board=self.sim_board )
+        
         # Refresh available tiles
         available_tiles = piece.get_possible_moves(
                 board = self.board,
                 player = player
         )
-
-        # Reset queen pos
-        self.move_piece( src=piece.pos, dest=origin_pos, board=self.board )
