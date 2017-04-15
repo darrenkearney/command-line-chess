@@ -566,12 +566,12 @@ Help menu
     Instructions:
 
         In order to play command line chess, you need to use the commands below.
-        It takes one command at a time. To enter a command type the letter or
-        word and press the Enter Key. 
+
+        **Type one command at a time** followed by the Enter/Return Key.
 
     Commands:
 
-        help / h / ?    Help (display this menu) = h / ? / help
+        help / h / ?    Help (display this menu)
 
         menu            Return to Main menu.
         
@@ -590,13 +590,18 @@ Help menu
         a               Left
         d               Right
 
-    To Select A Piece:
+    To Select Piece Under Cursor:
 
-        x               Press x over the piece to select it, or pick it up. 
+        x               Selects the piece under the cursor, like picking it up.
                         Once selected, move the cursor to where you want to put
-                        the piece, then enter 'x' again to place it. Pieces
-                        should only successfully place on legal tiles. Let me
-                        know if there are any wierd bugs!
+                        the piece.
+    Move Piece
+
+        x               Must have a piece selected first. Then enter 'x' again
+                        to attempt to place it at current cursor tile. 
+                        Pieces should only be placed on legal tiles.
+                        Let me know if there are any wierd bugs!
+
 """
 
 
