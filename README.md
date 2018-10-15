@@ -24,6 +24,8 @@ python app.py
 ### How to play
 
 Start a new game from the game menu or load a saved game.
+You control a cursor that can move across the board one tile at a time (either up,down,left or right).
+The cursor is used to select a piece, then move to a desired tile and select again to move the piece to the tile.
 
 Instructions:
 
@@ -57,7 +59,8 @@ Instructions:
         x               Selects the piece under the cursor, like picking it up.
                         Once selected, move the cursor to where you want to put
                         the piece.
-    Move Piece
+
+    Move Piece:
 
         x               Must have a piece selected. Then enter 'x' again to attempt to place it.
                         Pieces should only be placed on legal tiles. Let me know if there are any wierd bugs!

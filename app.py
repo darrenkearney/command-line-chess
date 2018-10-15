@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Command Line Chess
 # Author: Darren Kearney
 # https://github.com/darrenkearney

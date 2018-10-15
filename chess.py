@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from piece  import Piece
 from bishop import Bishop
 from king   import King
@@ -595,7 +596,8 @@ Help menu
         x               Selects the piece under the cursor, like picking it up.
                         Once selected, move the cursor to where you want to put
                         the piece.
-    Move Piece
+
+    Move Piece:
 
         x               Must have a piece selected first. Then enter 'x' again
                         to attempt to place it at current cursor tile. 
